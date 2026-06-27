@@ -5,16 +5,19 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-def load_data(filepath):
-    """Loads the dataset and separates features and targets."""
-    print(f"Loading data from {filepath}...")
+from pipeline import load_and_clean_data, preprocess_and_engineer
+
+def load_data(filepath='combined_data.csv'):
+    """Loads the dataset, engineers features, and separates features and targets."""
+    print(f"Loading and engineering data from {filepath}...")
     try:
-        df = pd.read_csv(filepath)
-    except FileNotFoundError:
-        print(f"Error: {filepath} not found. Please ensure the file exists.")
+        raw_df = load_and_clean_data(filepath)
+        df = preprocess_and_engineer(raw_df)
+    except Exception as e:
+        print(f"Error loading or processing data: {e}")
         raise
 
-    # Exclude non-feature columns if they exist
+    # Exclude non-feature columns
     exclude_cols = ['Date', 'Day_of_Week', 'Morning_number', 'Evening_number', 'Draw_Index']
     features = [col for col in df.columns if col not in exclude_cols]
 
@@ -179,7 +182,7 @@ def predict_tomorrow(df, X, y_m, y_e, params, window_size=500):
 
 
 def main():
-    filepath = 'ml_ready_features.csv'
+    filepath = 'combined_data.csv'
     
     try:
         df, X, y_m, y_e = load_data(filepath)

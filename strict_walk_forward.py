@@ -198,8 +198,13 @@ def predict_tomorrow(df, X, y_m, y_e, params, window_size=500):
     m_top3_tomorrow = np.argsort(m_probs_tomorrow)[-3:][::-1]
     e_top3_tomorrow = np.argsort(e_probs_tomorrow)[-3:][::-1]
 
+    # Calculate exact date for tomorrow
+    last_date = pd.to_datetime(df['Date'].iloc[-1])
+    prediction_date = last_date + pd.Timedelta(days=1)
+    prediction_date_str = prediction_date.strftime('%Y-%m-%d (%A)')
+
     print("\n=======================================================")
-    print("             PREDICTIONS FOR TOMORROW                  ")
+    print(f"       PREDICTIONS FOR: {prediction_date_str}       ")
     print("=======================================================")
     print("Morning Draw - Exact Top 3 Softmax Probabilities:")
     for num in m_top3_tomorrow:

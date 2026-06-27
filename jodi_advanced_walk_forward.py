@@ -80,8 +80,8 @@ def load_and_engineer(filepath):
     
     return df
 
-def walk_forward_validation(df, window_size=500):
-    print(f"Starting Strict Walk-Forward Validation (Window: {window_size})...")
+def walk_forward_validation(df, window_size=500, retrain_step=7):
+    print(f"Starting GPU-Optimized Walk-Forward Validation (Window: {window_size}, Step: {retrain_step})...")
     
     # Exclude non-mathematical labels from training
     features = [c for c in df.columns if c not in ['Date', 'Day_of_Week', 'Jodi', 'Morning_number', 'Evening_number']]
@@ -97,7 +97,8 @@ def walk_forward_validation(df, window_size=500):
         'max_depth': 4,
         'learning_rate': 0.05,
         'n_estimators': 100,
-        'tree_method': 'hist', # Speed optimized
+        'tree_method': 'hist',
+        'device': 'cuda', # Force GPU
         'random_state': 42,
         'verbosity': 0
     }
@@ -108,10 +109,11 @@ def walk_forward_validation(df, window_size=500):
     jodi_top4_hits = 0
     
     steps = len(df) - window_size
+    train_cycles = 0
     
-    for i in range(window_size, len(df)):
-        if (i - window_size) % 50 == 0:
-            print(f"  Validating Step {i - window_size}/{steps}...")
+    for i in range(window_size, len(df), retrain_step):
+        if train_cycles % 10 == 0:
+            print(f"  Training Cycle {train_cycles} (Evaluated {total_predictions}/{steps} draws)...")
             
         train_idx_start = i - window_size
         train_idx_end = i
@@ -120,43 +122,48 @@ def walk_forward_validation(df, window_size=500):
         y_m_train = y_m.iloc[train_idx_start:train_idx_end]
         y_e_train = y_e.iloc[train_idx_start:train_idx_end]
         
-        X_test = X.iloc[[i]]
-        true_m = y_m.iloc[i]
-        true_e = y_e.iloc[i]
-        
         model_m = xgb.XGBClassifier(**params)
         model_e = xgb.XGBClassifier(**params)
         
         model_m.fit(X_train, y_m_train)
         model_e.fit(X_train, y_e_train)
+        train_cycles += 1
         
-        m_probs = model_m.predict_proba(X_test)[0]
-        e_probs = model_e.predict_proba(X_test)[0]
+        # Predict the next sequence of individual draws using this fixed model
+        end_pred_idx = min(i + retrain_step, len(df))
         
-        m_top3 = np.argsort(m_probs)[-3:][::-1]
-        e_top3 = np.argsort(e_probs)[-3:][::-1]
-        
-        if true_m == m_top3[0]: m_top1_hits += 1
-        if true_m in m_top3: m_top3_hits += 1
-        
-        if true_e == e_top3[0]: e_top1_hits += 1
-        if true_e in e_top3: e_top3_hits += 1
-        
-        # Calculate Jodi Joint Probabilities
-        jodi_probs = {}
-        for mm in range(10):
-            for ee in range(10):
-                jodi_probs[f"{mm}{ee}"] = m_probs[mm] * e_probs[ee]
-                
-        top4_jodis = sorted(jodi_probs.items(), key=lambda x: x[1], reverse=True)[:4]
-        top4_keys = [x[0] for x in top4_jodis]
-        
-        true_jodi = f"{true_m}{true_e}"
-        if true_jodi in top4_keys:
-            jodi_top4_hits += 1
+        for j in range(i, end_pred_idx):
+            X_test = X.iloc[[j]]
+            true_m = y_m.iloc[j]
+            true_e = y_e.iloc[j]
             
-        total_predictions += 1
-        
+            m_probs = model_m.predict_proba(X_test)[0]
+            e_probs = model_e.predict_proba(X_test)[0]
+            
+            m_top3 = np.argsort(m_probs)[-3:][::-1]
+            e_top3 = np.argsort(e_probs)[-3:][::-1]
+            
+            if true_m == m_top3[0]: m_top1_hits += 1
+            if true_m in m_top3: m_top3_hits += 1
+            
+            if true_e == e_top3[0]: e_top1_hits += 1
+            if true_e in e_top3: e_top3_hits += 1
+            
+            # Calculate Jodi Joint Probabilities
+            jodi_probs = {}
+            for mm in range(10):
+                for ee in range(10):
+                    jodi_probs[f"{mm}{ee}"] = m_probs[mm] * e_probs[ee]
+                    
+            top4_jodis = sorted(jodi_probs.items(), key=lambda x: x[1], reverse=True)[:4]
+            top4_keys = [x[0] for x in top4_jodis]
+            
+            true_jodi = f"{true_m}{true_e}"
+            if true_jodi in top4_keys:
+                jodi_top4_hits += 1
+                
+            total_predictions += 1
+            
     m_top1_acc = m_top1_hits / total_predictions
     m_top3_acc = m_top3_hits / total_predictions
     e_top1_acc = e_top1_hits / total_predictions
@@ -167,6 +174,7 @@ def walk_forward_validation(df, window_size=500):
     print("      ADVANCED DEEP-MATH VALIDATION SCORECARD          ")
     print("=======================================================")
     print(f"Total Test Period Draws Evaluated: {total_predictions}")
+    print(f"Total Training Cycles Executed: {train_cycles}")
     print("\nMorning Model:")
     print(f"  Top 1 Hit Rate: {m_top1_acc*100:.2f}% (Random Baseline: 10%)")
     print(f"  Top 3 Hit Rate: {m_top3_acc*100:.2f}% (Random Baseline: 30%)")

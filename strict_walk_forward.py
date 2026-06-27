@@ -47,7 +47,8 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
         'n_estimators': 100,
         'random_state': 42,
         'verbosity': 0,
-        'n_jobs': -1
+        'n_jobs': -1,
+        'tree_method': 'hist'  # Drastically speeds up calculations
     }
 
     # Tracking metrics

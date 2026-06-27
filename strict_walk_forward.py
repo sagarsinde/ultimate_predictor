@@ -55,6 +55,7 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
     m_top3_hits = 0
     e_top1_hits = 0
     e_top3_hits = 0
+    jodi_top4_hits = 0
 
     total_predictions = 0
 
@@ -88,6 +89,17 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
         m_probs = model_m.predict_proba(X_test)[0]
         e_probs = model_e.predict_proba(X_test)[0]
 
+        # Calculate Jodi Joint Probabilities
+        jodi_probs = {}
+        for m in range(10):
+            for e in range(10):
+                jodi_num = f"{m}{e}"
+                jodi_probs[jodi_num] = m_probs[m] * e_probs[e]
+                
+        # Sort Top 4 Jodis
+        sorted_jodis = sorted(jodi_probs.items(), key=lambda item: item[1], reverse=True)
+        top4_jodis = [j[0] for j in sorted_jodis[:4]]
+
         # Find Top 3 predicted digits
         m_top3_pred = np.argsort(m_probs)[-3:][::-1]
         e_top3_pred = np.argsort(e_probs)[-3:][::-1]
@@ -98,6 +110,10 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
         # 4. Compare and log result
         total_predictions += 1
         
+        actual_jodi = f"{y_m_test}{y_e_test}"
+        if actual_jodi in top4_jodis:
+            jodi_top4_hits += 1
+            
         if m_top1_pred == y_m_test:
             m_top1_hits += 1
         if y_m_test in m_top3_pred:
@@ -116,6 +132,7 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
     m_top3_acc = m_top3_hits / total_predictions
     e_top1_acc = e_top1_hits / total_predictions
     e_top3_acc = e_top3_hits / total_predictions
+    jodi_top4_acc = jodi_top4_hits / total_predictions
 
     print("\n=======================================================")
     print("                 VALIDATION SCORECARD                  ")
@@ -128,6 +145,9 @@ def walk_forward_validation(df, X, y_m, y_e, window_size=500):
     print("\nEvening Model:")
     print(f"  Top 1 Hit Rate (Accuracy): {e_top1_acc*100:.2f}% (Random Baseline 10%)")
     print(f"  Top 3 Hit Rate:            {e_top3_acc*100:.2f}% (Random Baseline 30%)")
+    
+    print("\nJodi Model (Joint Probability):")
+    print(f"  Top 4 Jodi Hit Rate:       {jodi_top4_acc*100:.2f}% (Random Baseline 4%)")
     print("=======================================================\n")
     
     return params
@@ -164,6 +184,15 @@ def predict_tomorrow(df, X, y_m, y_e, params, window_size=500):
         
     m_probs_tomorrow = model_m_final.predict_proba(tomorrow_X)[0]
     e_probs_tomorrow = model_e_final.predict_proba(tomorrow_X)[0]
+    
+    jodi_probs_tomorrow = {}
+    for m in range(10):
+        for e in range(10):
+            jodi_num = f"{m}{e}"
+            jodi_probs_tomorrow[jodi_num] = m_probs_tomorrow[m] * e_probs_tomorrow[e]
+            
+    sorted_jodis_tomorrow = sorted(jodi_probs_tomorrow.items(), key=lambda item: item[1], reverse=True)
+    top4_jodis_tomorrow = sorted_jodis_tomorrow[:4]
 
     m_top3_tomorrow = np.argsort(m_probs_tomorrow)[-3:][::-1]
     e_top3_tomorrow = np.argsort(e_probs_tomorrow)[-3:][::-1]
@@ -178,6 +207,10 @@ def predict_tomorrow(df, X, y_m, y_e, params, window_size=500):
     print("\nEvening Draw - Exact Top 3 Softmax Probabilities:")
     for num in e_top3_tomorrow:
         print(f"  Digit {num}: {e_probs_tomorrow[num]*100:.2f}%")
+        
+    print("\nTop 4 Jodi Predictions (Joint Probability):")
+    jodi_str = ", ".join([f"{j[0]} ({j[1]*100:.1f}%)" for j in top4_jodis_tomorrow])
+    print(f"  Top 4 Jodi: {jodi_str}")
     print("=======================================================\n")
 
 

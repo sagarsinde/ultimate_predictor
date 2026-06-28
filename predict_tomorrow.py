@@ -70,6 +70,7 @@ def main():
         X_predict['FFT_Wave_4_9'] = np.sin(2 * np.pi * next_step / 4.9)
     
     print("\nExecuting Calibrated Probability Matrix...")
+    X_predict = X_predict.astype(float)
     m_probs = model_m.predict_proba(X_predict)[0]
     e_probs = model_e.predict_proba(X_predict)[0]
     

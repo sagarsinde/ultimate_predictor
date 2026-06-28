@@ -49,7 +49,7 @@ def main():
         actual_jodi = f"{actual_m}{actual_e}"
         
         # Extract features for prediction
-        X_test = row[features].to_frame().T
+        X_test = row[features].to_frame().T.astype(float)
         
         # Predict Probas
         m_probs = model_m.predict_proba(X_test)[0]

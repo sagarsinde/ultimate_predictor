@@ -40,6 +40,8 @@ def main():
         return
 
     print("Simulating 2026 Timeline...")
+    print("Format: [Date] | ACTUAL: [Morning] [Evening] | AI MORNING TOP 3 | AI EVENING TOP 3")
+    print("-" * 90)
     
     # 4. Step through time
     for index, row in vault_df.iterrows():
@@ -57,10 +59,13 @@ def main():
         
         # Get Top Picks
         m_top1 = np.argsort(m_probs)[-1]
-        m_top3 = np.argsort(m_probs)[-3:][::-1]
+        m_top3 = np.argsort(m_probs)[-3:][::-1].tolist()
         
         e_top1 = np.argsort(e_probs)[-1]
-        e_top3 = np.argsort(e_probs)[-3:][::-1]
+        e_top3 = np.argsort(e_probs)[-3:][::-1].tolist()
+        
+        date_str = row['Date'].strftime('%Y-%m-%d')
+        print(f"[{date_str}] | ACTUAL: {actual_m} {actual_e} | AI M_PRED: {m_top3} | AI E_PRED: {e_top3}")
         
         # Joint Jodi Probabilities
         jodi_probs = {}

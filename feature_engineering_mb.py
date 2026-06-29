@@ -21,8 +21,8 @@ def generate_features(df_input):
         # Day of Week Encoding (Sine/Cosine for cyclical nature)
         df['DOW_Num'] = df['Date'].dt.dayofweek
         
-    df['DOW_sin'] = np.sin(2 * np.pi * df['DOW_Num'] / 6.0)
-    df['DOW_cos'] = np.cos(2 * np.pi * df['DOW_Num'] / 6.0)
+    df['DOW_sin'] = np.sin(2 * np.pi * df['DOW_Num'] / 5.0)
+    df['DOW_cos'] = np.cos(2 * np.pi * df['DOW_Num'] / 5.0)
     
     # 2. Classic Lags (1 to 7 Days)
     for i in range(1, 8):

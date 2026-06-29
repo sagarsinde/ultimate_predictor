@@ -27,7 +27,7 @@ def main():
     print(f"Hold-Out Vault (2026): {len(test_df)} rows securely locked.")
     
     # 3. Define Features
-    drop_cols = ['Date', 'Day_of_Week', 'Jodi', 'Morning_number', 'Evening_number', 'Draw_Index', 
+    drop_cols = ['Date', 'Day', 'Day_of_Week', 'Jodi', 'Morning_number', 'Evening_number', 'Draw_Index', 
                  'Morning_card1', 'Morning_card2', 'Morning_card3', 
                  'Evening_number1', 'Evening_number2', 'Evening_number3']
     

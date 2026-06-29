@@ -18,10 +18,15 @@ def generate_features(df_input):
         df['DOW_Num'] = df['Day_of_Week'].map(dow_map).fillna(0)
     else:
         df['Date'] = pd.to_datetime(df['Date'])
-        df['DOW_Num'] = df['Date'].dt.dayofweek # Note: dt.dayofweek has Mon=0, Sun=6. We will just use it.
+        # Day of Week Encoding (Sine/Cosine for cyclical nature)
+        df['DOW_Num'] = df['Date'].dt.dayofweek
         
-    df['DOW_sin'] = np.sin(2 * np.pi * df['DOW_Num'] / 6.0)
-    df['DOW_cos'] = np.cos(2 * np.pi * df['DOW_Num'] / 6.0)
+    # Dynamically detect if this is a 5-day or 6-day market
+    max_dow = df['DOW_Num'].max()
+    cycle_length = float(max_dow + 1)
+    
+    df['DOW_sin'] = np.sin(2 * np.pi * df['DOW_Num'] / cycle_length)
+    df['DOW_cos'] = np.cos(2 * np.pi * df['DOW_Num'] / cycle_length)
     
     # 2. Classic Lags (1 to 7 Days)
     for i in range(1, 8):

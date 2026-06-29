@@ -1,9 +1,12 @@
 import pandas as pd
+import sys
 from feature_engineering import generate_features
 
 def main():
     print("--- Phase 1: Feature Store Pipeline ---")
     input_file = 'true_kalyan_main_dataset.csv'
+    if len(sys.argv) > 1:
+        input_file = sys.argv[1]
     output_file = 'kalyan_feature_store.csv'
     
     print(f"Loading raw dataset: {input_file}")

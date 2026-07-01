@@ -66,14 +66,13 @@ def append_to_dataset(csv_file, date, morning, evening, market):
     # Build new row
     if market == 'kalyan':
         # Kalyan dataset has panel numbers. We don't have predicted panel numbers, 
-        # so we will just fill them with 0s. The feature builder only uses digits mostly,
-        # but we need to match columns: Date,Day_of_Week,Open_Panel_1,Open_Panel_2,Open_Panel_3,Morning_number,Close_Panel_1,Close_Panel_2,Close_Panel_3,Evening_number,Draw_Index
+        # so we will just fill them with 0s.
         new_row = {
             'Date': date.strftime('%Y-%m-%d'),
             'Day_of_Week': day_name,
-            'Open_Panel_1': 0, 'Open_Panel_2': 0, 'Open_Panel_3': 0,
+            'Morning_card1': 0, 'Morning_card2': 0, 'Morning_card3': 0,
+            'Evening_number1': 0, 'Evening_number2': 0, 'Evening_number3': 0,
             'Morning_number': morning,
-            'Close_Panel_1': 0, 'Close_Panel_2': 0, 'Close_Panel_3': 0,
             'Evening_number': evening,
             'Draw_Index': df['Draw_Index'].max() + 1 if 'Draw_Index' in df.columns else len(df) + 1
         }

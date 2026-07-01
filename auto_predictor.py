@@ -36,10 +36,10 @@ def get_top_prediction(script_name):
     is_evening_section = False
     
     for line in output.split('\n'):
-        if 'OPEN (Morning)' in line or 'Morning Prediction' in line:
+        if 'OPEN (Morning)' in line or 'Morning Prediction' in line or 'Morning Draw' in line:
             is_morning_section = True
             is_evening_section = False
-        elif 'CLOSE (Evening)' in line or 'Evening Prediction' in line:
+        elif 'CLOSE (Evening)' in line or 'Evening Prediction' in line or 'Evening Draw' in line:
             is_morning_section = False
             is_evening_section = True
             

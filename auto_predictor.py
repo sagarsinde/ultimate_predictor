@@ -111,10 +111,14 @@ def run_auto_predictor(market, target_date_str):
         
         if next_date > target_date:
             print(f"\n========================================================")
-            print(f" SUCCESS! We have reached/predicted up to {target_date_str}")
-            print(f"========================================================")
-            # Run one final time to show the prediction for the day AFTER target (if needed), 
-            # or just show the output of the target date prediction!
+            print(f" Dataset is up to date through {target_date_str}")
+            print(f" Now predicting NEXT playing day: {next_date.strftime('%Y-%m-%d')} ({next_date.strftime('%A')})")
+            print(f"========================================================\n")
+            # Run predict one final time to show tomorrow's prediction
+            result = subprocess.run(['python', predict_script], capture_output=True, text=True)
+            print(result.stdout)
+            if result.stderr:
+                print(result.stderr)
             break
             
         print(f"\n========================================================")

@@ -57,6 +57,16 @@ def evaluate_month(market, target_month='2026-06'):
         ensemble_m_probs = np.zeros(10)
         total_weight = 0.0
         
+        # The user's requested short-term models
+        custom_models = [
+            '3m_rf', '3m_xgb', '2m_rf', '2m_xgb', 
+            '1m_freq', '1m_markov', '1m_rf'
+        ]
+        
+        # Override weights to ONLY use these custom models equally
+        if custom_models:
+            weights = {m: 1.0/len(custom_models) for m in custom_models}
+
         for model_id, weight in weights.items():
             parts = model_id.split('_', 1)
             window_label = parts[0]

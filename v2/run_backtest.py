@@ -55,7 +55,7 @@ def main():
 
     # Step 3: Learn weights
     print("\n[STEP 3/5] Learning model weights from Brier Scores...")
-    raw_weights = learn_weights(avg_metrics, temperature=0.1)
+    raw_weights = learn_weights(avg_metrics)
 
     print(f"\n  Raw weights (before pruning):")
     for mid, w in sorted(raw_weights.items(), key=lambda x: -x[1]):

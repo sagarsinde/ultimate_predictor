@@ -315,30 +315,30 @@ def _print_metrics_table(avg_metrics):
     print(f"  Random baseline: Top-1 = 10.0%, Top-3 = 30.0%, Brier = 0.1800")
 
 
-def learn_weights(avg_metrics, temperature=0.005):
+def learn_weights(avg_metrics, temperature=0.02):
     """
-    Compute model weights from Brier Scores via softmax.
+    Compute model weights from Top-3 Accuracy via softmax.
 
-    Lower Brier = better model = higher weight.
+    Higher Top-3 = better model = higher weight.
     Temperature controls sharpness:
-      - Low temp (0.005) = winner-take-all (sharp distribution)
+      - Low temp (0.02) = winner-take-all
       - High temp (1.0) = nearly equal weights
     """
     model_ids = sorted(avg_metrics.keys())
     if not model_ids:
         return {}
 
-    # Combined Brier = average of morning and evening
-    brier_scores = []
+    # Combined Top-3 = average of morning and evening
+    top3_scores = []
     for mid in model_ids:
         m = avg_metrics[mid]
-        combined_brier = (m['brier_m'] + m['brier_e']) / 2.0
-        brier_scores.append(combined_brier)
+        combined_top3 = (m['top3_m'] + m['top3_e']) / 2.0
+        top3_scores.append(combined_top3)
 
-    brier_scores = np.array(brier_scores)
+    top3_scores = np.array(top3_scores)
 
-    # Softmax of NEGATIVE brier (lower brier = higher score)
-    raw_scores = -brier_scores / temperature
+    # Softmax of POSITIVE Top-3 (higher Top-3 = higher score)
+    raw_scores = top3_scores / temperature
     raw_scores -= raw_scores.max()  # Numerical stability
     exp_scores = np.exp(raw_scores)
     weights = exp_scores / exp_scores.sum()

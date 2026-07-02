@@ -54,9 +54,9 @@ def evaluate_month(market, target_month='2026-06'):
         # Context is everything UP TO the day before
         context_df = df.iloc[:pred_idx].copy()
         
-        # We only want to use full_freq
-        model_id = 'full_freq'
-        window_label, model_type = 'full', 'freq'
+        # We only want to use 3m_freq
+        model_id = '3m_freq'
+        window_label, model_type = '3m', 'freq'
         
         model_m, model_e, _ = _train_single_model(
             model_type, window_label, context_df, market, surviving_groups

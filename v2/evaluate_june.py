@@ -22,9 +22,7 @@ def evaluate_month(market, target_month='2026-06'):
         print(f"No saved state for {market}. Run backtest first.")
         return
 
-    weights = state['weights']
     surviving_groups = state['surviving_groups']
-    
     df = load_raw_data(market)
     
     # Get all indices for the target month
@@ -36,94 +34,104 @@ def evaluate_month(market, target_month='2026-06'):
         print(f"No data found for {target_month}")
         return
         
-    print(f"\n{'='*70}")
-    print(f"  EVALUATING ENSEMBLE VS REALITY: {market.upper()} ({target_month})")
-    print(f"{'='*70}")
-    print(f"  {'Date':<12} | {'Actual M':<8} | {'Predicted Top-3 (Morning)':<30} | {'Hit?':<5}")
-    print(f"  {'-'*12}-+-{'-'*8}-+-{'-'*30}-+-{'-'*5}")
+    print(f"\n{'='*100}")
+    print(f"  EVALUATING: {market.upper()} ({target_month}) — ONLY full_freq (Morning, Evening, Jodi)")
+    print(f"{'='*100}")
+    print(f"  {'Date':<12} | {'Actual M':<8} | {'Pred M (Top3)':<20} | {'Actual E':<8} | {'Pred E (Top3)':<20} | {'Actual Jodi':<12} | {'Pred Jodi (Top4)':<35}")
+    print(f"  {'-'*12}-+-{'-'*8}-+-{'-'*20}-+-{'-'*8}-+-{'-'*20}-+-{'-'*12}-+-{'-'*35}")
     
-    hits_top1 = 0
-    hits_top3 = 0
     total = 0
+    m_top1_hits = 0; m_top3_hits = 0
+    e_top1_hits = 0; e_top3_hits = 0
+    jodi_hits = 0
     
     for pred_idx in june_indices:
         pred_date = df.iloc[pred_idx]['Date'].strftime('%Y-%m-%d')
         actual_m = int(df.iloc[pred_idx]['Morning_number'])
         actual_e = int(df.iloc[pred_idx]['Evening_number'])
+        actual_jodi = f"{actual_m}{actual_e}"
         
         # Context is everything UP TO the day before
         context_df = df.iloc[:pred_idx].copy()
         
-        ensemble_m_probs = np.zeros(10)
-        total_weight = 0.0
+        # We only want to use full_freq
+        model_id = 'full_freq'
+        window_label, model_type = 'full', 'freq'
         
-        # The user's requested short-term models
-        custom_models = [
-            '3m_rf', '3m_xgb', '2m_rf', '2m_xgb', 
-            '1m_freq', '1m_markov', '1m_rf'
-        ]
+        model_m, model_e, _ = _train_single_model(
+            model_type, window_label, context_df, market, surviving_groups
+        )
         
-        # Override weights to ONLY use these custom models equally
-        if custom_models:
-            weights = {m: 1.0/len(custom_models) for m in custom_models}
-
-        for model_id, weight in weights.items():
-            parts = model_id.split('_', 1)
-            window_label = parts[0]
-            model_type = parts[1]
-            
-            model_m, model_e, _ = _train_single_model(
-                model_type, window_label, context_df, market, surviving_groups
-            )
-            
-            if model_m is None: continue
-            
-            window_draws = get_window_size(market, window_label)
-            pred_df = slice_window(context_df, window_draws)
-            feat_df, _, _, _ = build_features(pred_df, surviving_groups)
-            
-            if len(feat_df) == 0: continue
-            
-            last_row = feat_df.iloc[[-1]]
-            feat_only = [c for c in last_row.columns if c != '_date']
-            X_pred = last_row[feat_only].values
-            
-            last_m = int(context_df.iloc[-1]['Morning_number'])
-            last_e = int(context_df.iloc[-1]['Evening_number'])
-            
-            m_probs, _ = _predict_single(model_m, model_e, model_type, X_pred, last_m, last_e)
-            
-            ensemble_m_probs += weight * m_probs
-            total_weight += weight
-            
-        if total_weight > 0:
-            ensemble_m_probs /= total_weight
-            
-        m_ranking = np.argsort(ensemble_m_probs)[::-1]
+        if model_m is None: continue
+        
+        window_draws = get_window_size(market, window_label)
+        pred_df = slice_window(context_df, window_draws)
+        feat_df, _, _, _ = build_features(pred_df, surviving_groups)
+        
+        if len(feat_df) == 0: continue
+        
+        last_row = feat_df.iloc[[-1]]
+        feat_only = [c for c in last_row.columns if c != '_date']
+        X_pred = last_row[feat_only].values
+        
+        last_m = int(context_df.iloc[-1]['Morning_number'])
+        last_e = int(context_df.iloc[-1]['Evening_number'])
+        
+        m_probs, e_probs = _predict_single(model_m, model_e, model_type, X_pred, last_m, last_e)
+        
+        # Morning Rankings
+        m_ranking = np.argsort(m_probs)[::-1]
         top3_m = m_ranking[:3].tolist()
         
-        # Check hits
-        total += 1
-        is_top1 = (actual_m == top3_m[0])
-        is_top3 = (actual_m in top3_m)
+        # Evening Rankings
+        e_ranking = np.argsort(e_probs)[::-1]
+        top3_e = e_ranking[:3].tolist()
         
-        if is_top1:
-            hits_top1 += 1
-            hit_marker = "⭐⭐⭐ TOP 1!"
-        elif is_top3:
-            hits_top3 += 1
-            hit_marker = "✅ Top 3"
-        else:
-            hit_marker = "❌ Miss"
+        # Jodi Rankings
+        jodi_probs = np.outer(m_probs, e_probs)
+        flat_jodi_probs = jodi_probs.flatten()
+        jodi_ranking = np.argsort(flat_jodi_probs)[::-1]
+        
+        top4_jodis = []
+        for rank in jodi_ranking[:4]:
+            m_digit = rank // 10
+            e_digit = rank % 10
+            top4_jodis.append(f"{m_digit}{e_digit}")
             
-        top3_str = f"{top3_m[0]}, {top3_m[1]}, {top3_m[2]}"
-        print(f"  {pred_date:<12} | {actual_m:<8} | {top3_str:<30} | {hit_marker}")
+        # Checks
+        total += 1
+        
+        m_hit_str = ""
+        if actual_m == top3_m[0]: m_top1_hits += 1; m_hit_str = "⭐"
+        elif actual_m in top3_m: m_top3_hits += 1; m_hit_str = "✅"
+        else: m_hit_str = "❌"
+            
+        e_hit_str = ""
+        if actual_e == top3_e[0]: e_top1_hits += 1; e_hit_str = "⭐"
+        elif actual_e in top3_e: e_top3_hits += 1; e_hit_str = "✅"
+        else: e_hit_str = "❌"
+            
+        jodi_hit_str = ""
+        if actual_jodi in top4_jodis:
+            jodi_hits += 1
+            jodi_hit_str = "⭐⭐⭐ JODI HIT!"
+        else:
+            jodi_hit_str = "❌"
+            
+        str_m = f"{top3_m[0]}, {top3_m[1]}, {top3_m[2]} {m_hit_str}"
+        str_e = f"{top3_e[0]}, {top3_e[1]}, {top3_e[2]} {e_hit_str}"
+        str_j = f"{', '.join(top4_jodis)} {jodi_hit_str}"
+        
+        print(f"  {pred_date:<12} | {actual_m:<8} | {str_m:<20} | {actual_e:<8} | {str_e:<20} | {actual_jodi:<12} | {str_j:<35}")
 
-    print(f"\n{'='*70}")
-    print(f"  RESULTS FOR {target_month}:")
-    print(f"  Top-1 Hits: {hits_top1}/{total} ({(hits_top1/total)*100:.1f}%)")
-    print(f"  Top-3 Hits: {(hits_top1 + hits_top3)}/{total} ({((hits_top1 + hits_top3)/total)*100:.1f}%)")
-    print(f"{'='*70}\n")
+    print(f"\n{'='*100}")
+    print(f"  FINAL RESULTS FOR {target_month} (using ONLY full_freq):")
+    print(f"  Morning Top-1: {m_top1_hits}/{total} ({(m_top1_hits/total)*100:.1f}%)")
+    print(f"  Morning Top-3: {(m_top1_hits + m_top3_hits)}/{total} ({((m_top1_hits + m_top3_hits)/total)*100:.1f}%)")
+    print(f"  Evening Top-1: {e_top1_hits}/{total} ({(e_top1_hits/total)*100:.1f}%)")
+    print(f"  Evening Top-3: {(e_top1_hits + e_top3_hits)}/{total} ({((e_top1_hits + e_top3_hits)/total)*100:.1f}%)")
+    print(f"  Jodi Top-4:    {jodi_hits}/{total} ({(jodi_hits/total)*100:.1f}%)")
+    print(f"{'='*100}\n")
 
 if __name__ == '__main__':
     evaluate_month('kalyan', '2026-06')

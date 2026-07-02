@@ -315,13 +315,13 @@ def _print_metrics_table(avg_metrics):
     print(f"  Random baseline: Top-1 = 10.0%, Top-3 = 30.0%, Brier = 0.1800")
 
 
-def learn_weights(avg_metrics, temperature=0.1):
+def learn_weights(avg_metrics, temperature=0.005):
     """
     Compute model weights from Brier Scores via softmax.
 
     Lower Brier = better model = higher weight.
     Temperature controls sharpness:
-      - Low temp (0.01) = winner-take-all
+      - Low temp (0.005) = winner-take-all (sharp distribution)
       - High temp (1.0) = nearly equal weights
     """
     model_ids = sorted(avg_metrics.keys())
@@ -397,7 +397,8 @@ def build_calibration(calibration_data):
 
     thresholds = {}
     # Find the predicted prob level where calibrated hit rate crosses key levels
-    for level_name, level_value in [('strong', 0.25), ('good', 0.18), ('marginal', 0.12)]:
+    # For a 10-class problem (random=10%), a hit rate of 16%+ is quite strong.
+    for level_name, level_value in [('strong', 0.16), ('good', 0.14), ('marginal', 0.12)]:
         candidates = test_probs[calibrated >= level_value]
         if len(candidates) > 0:
             thresholds[level_name] = float(candidates[0])

@@ -166,7 +166,7 @@ class MarkovModel:
     def __init__(self):
         self.transition = None  # shape (10, 10)
 
-    def fit(self, X, y, sequence=None):
+    def fit(self, X, y, sequence=None, dow_sequence=None):
         """
         Args:
             X: ignored (interface compatibility)
@@ -189,7 +189,7 @@ class MarkovModel:
         row_sums = self.transition.sum(axis=1, keepdims=True)
         self.transition = self.transition / row_sums
 
-    def predict_proba(self, X=None, last_digit=None):
+    def predict_proba(self, X=None, last_digit=None, current_dow=None):
         """
         Args:
             X: ignored
@@ -213,7 +213,7 @@ class FrequencyModel:
     def __init__(self):
         self.probs = None
 
-    def fit(self, X, y, sequence=None):
+    def fit(self, X, y, sequence=None, dow_sequence=None):
         """
         Args:
             X: ignored

@@ -1,5 +1,5 @@
 """
-v2/models.py — Model Definitions
+v3/models.py — Model Definitions
 
 Four model types, each outputting P(digit=d) for d in {0..9}:
   1. XGBoost (gradient boosting with isotonic calibration)

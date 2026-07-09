@@ -321,54 +321,56 @@ def _print_metrics_table(avg_metrics):
 
 def learn_weights(avg_metrics, temperature=0.02):
     """
-    Compute decoupled model weights from Top-3 Accuracy via softmax.
-    Returns {'weights_m': {...}, 'weights_e': {...}}
+    Compute model weights from Top-3 Accuracy via softmax.
+
+    Higher Top-3 = better model = higher weight.
+    Temperature controls sharpness:
+      - Low temp (0.02) = winner-take-all
+      - High temp (1.0) = nearly equal weights
     """
     model_ids = sorted(avg_metrics.keys())
     if not model_ids:
-        return {'weights_m': {}, 'weights_e': {}}
+        return {}
 
-    top3_m = np.array([avg_metrics[mid]['top3_m'] for mid in model_ids])
-    top3_e = np.array([avg_metrics[mid]['top3_e'] for mid in model_ids])
+    # Combined Top-3 = average of morning and evening
+    top3_scores = []
+    for mid in model_ids:
+        m = avg_metrics[mid]
+        combined_top3 = (m['top3_m'] + m['top3_e']) / 2.0
+        top3_scores.append(combined_top3)
 
-    def calc_weights(scores):
-        raw_scores = scores / temperature
-        raw_scores -= raw_scores.max()
-        exp_scores = np.exp(raw_scores)
-        return exp_scores / exp_scores.sum()
+    top3_scores = np.array(top3_scores)
 
-    weights_m = calc_weights(top3_m)
-    weights_e = calc_weights(top3_e)
+    # Softmax of POSITIVE Top-3 (higher Top-3 = higher score)
+    raw_scores = top3_scores / temperature
+    raw_scores -= raw_scores.max()  # Numerical stability
+    exp_scores = np.exp(raw_scores)
+    weights = exp_scores / exp_scores.sum()
 
-    return {
-        'weights_m': {mid: float(w) for mid, w in zip(model_ids, weights_m)},
-        'weights_e': {mid: float(w) for mid, w in zip(model_ids, weights_e)}
-    }
+    return {mid: float(w) for mid, w in zip(model_ids, weights)}
 
 
-def prune_models(weights_dict, cumulative_threshold=0.95):
+def prune_models(weights, cumulative_threshold=0.95):
     """
-    Prunes the Morning and Evening weights independently.
+    Keep only models needed to reach cumulative_threshold weight.
+    Returns dict of surviving model_id -> renormalized weight.
     """
-    if not weights_dict or 'weights_m' not in weights_dict:
-        return {'weights_m': {}, 'weights_e': {}}
+    if not weights:
+        return {}
 
-    def prune_single(weights):
-        sorted_models = sorted(weights.items(), key=lambda x: x[1], reverse=True)
-        survivors = {}
-        cumulative = 0.0
-        for mid, w in sorted_models:
-            survivors[mid] = w
-            cumulative += w
-            if cumulative >= cumulative_threshold:
-                break
-        total = sum(survivors.values())
-        return {mid: w / total for mid, w in survivors.items()}
+    sorted_models = sorted(weights.items(), key=lambda x: x[1], reverse=True)
+    survivors = {}
+    cumulative = 0.0
 
-    return {
-        'weights_m': prune_single(weights_dict['weights_m']),
-        'weights_e': prune_single(weights_dict['weights_e'])
-    }
+    for mid, w in sorted_models:
+        survivors[mid] = w
+        cumulative += w
+        if cumulative >= cumulative_threshold:
+            break
+
+    # Renormalize surviving weights
+    total = sum(survivors.values())
+    return {mid: w / total for mid, w in survivors.items()}
 
 
 def build_calibration(calibration_data):
@@ -475,15 +477,14 @@ def run_feature_ablation(market, base_groups=None, verbose=True):
     return surviving_groups
 
 
-def save_state(market, weights_dict, surviving_groups, calibration_m, calibration_e,
+def save_state(market, weights, surviving_groups, calibration_m, calibration_e,
                thresholds_m, thresholds_e, avg_metrics):
     """Save all learned state to disk."""
     _ensure_state_dir()
 
     state = {
         'market': market,
-        'weights_m': weights_dict.get('weights_m', {}),
-        'weights_e': weights_dict.get('weights_e', {}),
+        'weights': weights,
         'surviving_groups': surviving_groups,
         'thresholds_m': thresholds_m,
         'thresholds_e': thresholds_e,

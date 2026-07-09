@@ -54,27 +54,21 @@ def main():
         sys.exit(1)
 
     # Step 3: Learn weights
-    print("\n[STEP 3/5] Learning model weights from Top-3 Accuracy...")
-    raw_weights_dict = learn_weights(avg_metrics)
+    print("\n[STEP 3/5] Learning model weights from Brier Scores...")
+    raw_weights = learn_weights(avg_metrics)
 
-    print(f"\n  Raw weights (Morning):")
-    for mid, w in sorted(raw_weights_dict['weights_m'].items(), key=lambda x: -x[1]):
-        print(f"    {mid:<15} {w:.4f}")
-
-    print(f"\n  Raw weights (Evening):")
-    for mid, w in sorted(raw_weights_dict['weights_e'].items(), key=lambda x: -x[1]):
+    print(f"\n  Raw weights (before pruning):")
+    for mid, w in sorted(raw_weights.items(), key=lambda x: -x[1]):
         print(f"    {mid:<15} {w:.4f}")
 
     # Step 4: Prune weak models
     print("\n[STEP 4/5] Pruning weak models (95% cumulative weight)...")
-    pruned_weights_dict = prune_models(raw_weights_dict, cumulative_threshold=0.95)
+    pruned_weights = prune_models(raw_weights, cumulative_threshold=0.95)
 
-    print(f"\n  Surviving Morning Models: {len(pruned_weights_dict['weights_m'])}")
-    for mid, w in sorted(pruned_weights_dict['weights_m'].items(), key=lambda x: -x[1]):
-        print(f"    {mid:<15} {w:.4f} (renormalized)")
-
-    print(f"\n  Surviving Evening Models: {len(pruned_weights_dict['weights_e'])}")
-    for mid, w in sorted(pruned_weights_dict['weights_e'].items(), key=lambda x: -x[1]):
+    pruned_count = len(raw_weights) - len(pruned_weights)
+    print(f"\n  Surviving: {len(pruned_weights)} models")
+    print(f"  Pruned: {pruned_count} models")
+    for mid, w in sorted(pruned_weights.items(), key=lambda x: -x[1]):
         print(f"    {mid:<15} {w:.4f} (renormalized)")
 
     # Step 5: Build confidence calibration
@@ -92,7 +86,7 @@ def main():
 
     # Save everything
     save_state(
-        market, pruned_weights_dict, surviving_groups,
+        market, pruned_weights, surviving_groups,
         calibrator_m, calibrator_e,
         thresholds_m, thresholds_e,
         avg_metrics,

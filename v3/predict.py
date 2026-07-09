@@ -52,18 +52,14 @@ def predict_tomorrow(market, verbose=True):
         print(f"ERROR: No saved state for {market}. Run 'python v2/run_backtest.py {market}' first!")
         return
 
-    weights_m = state.get('weights_m', {})
-    weights_e = state.get('weights_e', {})
+    weights = state['weights']
     surviving_groups = state['surviving_groups']
     thresholds_m = state.get('thresholds_m', {})
     thresholds_e = state.get('thresholds_e', {})
     calibrators = state.get('calibrators', {})
 
-    active_models = set(weights_m.keys()) | set(weights_e.keys())
-
     if verbose:
-        print(f"\n  Loading state: {len(active_models)} active models "
-              f"({len(weights_m)} Morning, {len(weights_e)} Evening), "
+        print(f"\n  Loading state: {len(weights)} surviving models, "
               f"{len(surviving_groups)} feature groups")
 
     # Load current data
@@ -79,23 +75,19 @@ def predict_tomorrow(market, verbose=True):
     ensemble_e_probs = np.zeros(10)
     model_details = []
 
-    total_weight_m = sum(weights_m.values())
-    total_weight_e = sum(weights_e.values())
+    total_weight_applied = 0.0
 
-    for model_id in sorted(active_models):
-        weight_m = weights_m.get(model_id, 0.0)
-        weight_e = weights_e.get(model_id, 0.0)
-
+    for model_id, weight in sorted(weights.items(), key=lambda x: -x[1]):
         # Parse model_id: "3m_xgb" -> window_label="3m", model_type="xgb"
         parts = model_id.split('_', 1)
         window_label = parts[0]
         model_type = parts[1]
 
-        model_m_obj, model_e_obj, feat_cols = _train_single_model(
+        model_m, model_e, feat_cols = _train_single_model(
             model_type, window_label, df, market, surviving_groups
         )
 
-        if model_m_obj is None:
+        if model_m is None:
             continue
 
         # Build prediction features from full current data
@@ -113,23 +105,22 @@ def predict_tomorrow(market, verbose=True):
         last_m = int(df.iloc[-1]['Morning_number'])
         last_e = int(df.iloc[-1]['Evening_number'])
 
+        # current_dow is the day of the week of pred_date
         current_dow = pred_date.weekday()
 
         m_probs, e_probs = _predict_single(
-            model_m_obj, model_e_obj, model_type, X_pred, last_m, last_e, current_dow
+            model_m, model_e, model_type, X_pred, last_m, last_e, current_dow
         )
 
         # Weighted accumulation
-        if weight_m > 0:
-            ensemble_m_probs += weight_m * m_probs
-        if weight_e > 0:
-            ensemble_e_probs += weight_e * e_probs
+        ensemble_m_probs += weight * m_probs
+        ensemble_e_probs += weight * e_probs
+        total_weight_applied += weight
 
         # Track per-model details
         model_details.append({
             'model_id': model_id,
-            'weight_m': weight_m,
-            'weight_e': weight_e,
+            'weight': weight,
             'top_m': int(np.argmax(m_probs)),
             'top_m_prob': float(np.max(m_probs)),
             'top_e': int(np.argmax(e_probs)),
@@ -137,10 +128,9 @@ def predict_tomorrow(market, verbose=True):
         })
 
     # Normalize (should already sum to ~1.0 but just in case)
-    if total_weight_m > 0:
-        ensemble_m_probs /= total_weight_m
-    if total_weight_e > 0:
-        ensemble_e_probs /= total_weight_e
+    if total_weight_applied > 0:
+        ensemble_m_probs /= total_weight_applied
+        ensemble_e_probs /= total_weight_applied
 
     # Rank digits
     m_ranking = np.argsort(ensemble_m_probs)[::-1]
@@ -256,19 +246,19 @@ def _print_prediction(market, pred_date_str, m_probs, e_probs,
 
     # Model breakdown
     print(f"\n  MODEL BREAKDOWN:")
-    print(f"  {'─'*70}")
-    print(f"  {'Model':<15} {'Weight-M':<9} {'Weight-E':<9} {'Top-M':<7} {'Prob-M':<8} {'Top-E':<7} {'Prob-E':<8}")
-    print(f"  {'─'*15} {'─'*9} {'─'*9} {'─'*7} {'─'*8} {'─'*7} {'─'*8}")
+    print(f"  {'─'*60}")
+    print(f"  {'Model':<15} {'Weight':<8} {'Top-M':<7} {'Prob-M':<8} {'Top-E':<7} {'Prob-E':<8}")
+    print(f"  {'─'*15} {'─'*8} {'─'*7} {'─'*8} {'─'*7} {'─'*8}")
     for md in model_details:
-        print(f"  {md['model_id']:<15} {md['weight_m']:<9.3f} {md['weight_e']:<9.3f} "
+        print(f"  {md['model_id']:<15} {md['weight']:<8.3f} "
               f"{md['top_m']:<7} {md['top_m_prob']*100:<7.1f}% "
               f"{md['top_e']:<7} {md['top_e_prob']*100:<7.1f}%")
 
     # Validation summary
+    metrics = state.get('model_metrics', {})
+    weights = state.get('weights', {})
     total_models = len(MODEL_TYPES) * 4  # 4 model types × 4 windows
-    weights_m = state.get('weights_m', {})
-    weights_e = state.get('weights_e', {})
-    surviving = len(set(weights_m.keys()) | set(weights_e.keys()))
+    surviving = len(weights)
     feature_groups = state.get('surviving_groups', [])
 
     print(f"\n  VALIDATION SUMMARY:")

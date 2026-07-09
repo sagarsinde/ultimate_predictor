@@ -98,19 +98,23 @@ def _train_single_model(model_type, window_label, train_df, market, active_group
 
     model_cls = MODEL_TYPES[model_type]
 
-    # Train morning model
-    model_m = model_cls()
-    if model_type in FEATURE_MODELS:
-        model_m.fit(X, y_m.values)
-    else:
-        model_m.fit(None, None, sequence=m_seq, dow_sequence=dow_seq)
+    try:
+        # Train morning model
+        model_m = model_cls()
+        if model_type in FEATURE_MODELS:
+            model_m.fit(X, y_m.values)
+        else:
+            model_m.fit(None, None, sequence=m_seq, dow_sequence=dow_seq)
 
-    # Train evening model
-    model_e = model_cls()
-    if model_type in FEATURE_MODELS:
-        model_e.fit(X, y_e.values)
-    else:
-        model_e.fit(None, None, sequence=e_seq, dow_sequence=dow_seq)
+        # Train evening model
+        model_e = model_cls()
+        if model_type in FEATURE_MODELS:
+            model_e.fit(X, y_e.values)
+        else:
+            model_e.fit(None, None, sequence=e_seq, dow_sequence=dow_seq)
+    except ImportError:
+        # Skip models where dependencies (like CatBoost) aren't installed
+        return None, None, None
 
     return model_m, model_e, feature_cols
 

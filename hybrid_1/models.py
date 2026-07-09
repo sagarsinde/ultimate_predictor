@@ -62,6 +62,7 @@ class XGBoostModel:
             learning_rate=0.05,
             n_estimators=150,
             tree_method='hist',
+            device='cuda',
             random_state=42,
             verbosity=0,
         )
@@ -76,6 +77,7 @@ class XGBoostModel:
                 base = xgb.XGBClassifier(
                     objective='multi:softprob', num_class=10,
                     max_depth=2, n_estimators=50, tree_method='hist',
+                    device='cpu',
                     random_state=42, verbosity=0,
                 )
                 base.fit(X, y, sample_weight=sample_weights)
@@ -89,7 +91,11 @@ class XGBoostModel:
                 calibrated.fit(X, y, sample_weight=sample_weights)
                 self.model = calibrated
             except Exception:
-                base.fit(X, y, sample_weight=sample_weights)
+                try:
+                    base.fit(X, y, sample_weight=sample_weights)
+                except Exception:
+                    base.set_params(device='cpu')
+                    base.fit(X, y, sample_weight=sample_weights)
                 self.model = base
 
     def predict_proba(self, X, last_digit=None):
@@ -298,9 +304,19 @@ class CatBoostModel:
             loss_function='MultiClass',
             verbose=0,
             random_seed=42,
-            allow_writing_files=False
+            allow_writing_files=False,
+            task_type='GPU'
         )
-        self.model.fit(X, y, sample_weight=sample_weights)
+        try:
+            self.model.fit(X, y, sample_weight=sample_weights)
+        except Exception:
+            self.model = cb.CatBoostClassifier(
+                iterations=150, depth=4, learning_rate=0.05,
+                loss_function='MultiClass', verbose=0,
+                random_seed=42, allow_writing_files=False,
+                task_type='CPU'
+            )
+            self.model.fit(X, y, sample_weight=sample_weights)
 
     def predict_proba(self, X, last_digit=None, current_dow=None):
         if cb is None:

@@ -100,7 +100,20 @@ def run_cascade_prediction(market='kalyan'):
         m_lag_idx = feature_cols.index('M_lag_1')
     except ValueError:
         m_lag_idx = -1
-        print("    Warning: M_lag_1 not in active features. Cannot strictly inject as lag!")
+        
+    me_corr_indices = {}
+    for d in range(10):
+        try:
+            me_corr_indices[d] = feature_cols.index(f'ME_corr_{d}')
+        except ValueError:
+            pass
+
+    # We need joint counts to calculate new ME_corr
+    joint_counts = np.zeros((10, 10), dtype=float)
+    morning_vals = df['Morning_number'].astype(int).values
+    evening_vals = df['Evening_number'].astype(int).values
+    for m_val, e_val in zip(morning_vals, evening_vals):
+        joint_counts[m_val][e_val] += 1
     
     total_weight_e = sum(weights_e.values())
     cascade_jodis = {}
@@ -125,6 +138,18 @@ def run_cascade_prediction(market='kalyan'):
             # INJECTION: Replace M_lag_1 with the predicted Morning candidate
             if m_lag_idx != -1:
                 X_injected[0, m_lag_idx] = m_cand
+                
+            # INJECTION: Replace ME_corr with conditional probability given m_cand
+            if me_corr_indices:
+                row_total = joint_counts[m_cand].sum()
+                if row_total > 0:
+                    probs = joint_counts[m_cand] / row_total
+                else:
+                    probs = np.ones(10) / 10.0
+                for d in range(10):
+                    idx = me_corr_indices.get(d)
+                    if idx is not None:
+                        X_injected[0, idx] = probs[d]
             
             # Predict evening using the injected features
             _, e_probs = _predict_single(

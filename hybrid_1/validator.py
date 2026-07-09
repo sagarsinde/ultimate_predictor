@@ -122,11 +122,11 @@ def _train_single_model(model_type, window_label, train_df, market, active_group
 def _predict_single(model_m, model_e, model_type, X_pred, last_m_digit, last_e_digit, current_dow=None):
     """Get probability distributions from a trained model pair."""
     if model_type in FEATURE_MODELS:
-        m_probs = model_m.predict_proba(X_pred)
-        e_probs = model_e.predict_proba(X_pred)
+        m_probs = model_m.predict_proba(X_pred) if model_m else np.zeros(10)
+        e_probs = model_e.predict_proba(X_pred) if model_e else np.zeros(10)
     else:
-        m_probs = model_m.predict_proba(last_digit=last_m_digit, current_dow=current_dow)
-        e_probs = model_e.predict_proba(last_digit=last_e_digit, current_dow=current_dow)
+        m_probs = model_m.predict_proba(last_digit=last_m_digit, current_dow=current_dow) if model_m else np.zeros(10)
+        e_probs = model_e.predict_proba(last_digit=last_e_digit, current_dow=current_dow) if model_e else np.zeros(10)
     return m_probs, e_probs
 
 

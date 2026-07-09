@@ -98,7 +98,7 @@ class XGBoostModel:
                     base.fit(X, y, sample_weight=sample_weights)
                 self.model = base
 
-    def predict_proba(self, X, last_digit=None):
+    def predict_proba(self, X, last_digits=None, current_dow=None):
         raw = self.model.predict_proba(X)[0]
         # Ensure we have probabilities for all 10 digits
         probs = np.zeros(10)
@@ -149,7 +149,7 @@ class RandomForestModel:
         )
         self.model.fit(X, y, sample_weight=sample_weights)
 
-    def predict_proba(self, X, last_digit=None):
+    def predict_proba(self, X, last_digits=None, current_dow=None):
         raw = self.model.predict_proba(X)[0]
         probs = np.zeros(10)
         for i, cls in enumerate(self.model.classes_):
@@ -233,7 +233,7 @@ class FrequencyModel:
 
         self.probs = (counts + alpha) / (counts.sum() + 10 * alpha)
 
-    def predict_proba(self, X=None, last_digit=None, current_dow=None):
+    def predict_proba(self, X=None, last_digits=None, current_dow=None):
         if self.probs is None:
             return np.ones(10) / 10.0
         return self.probs.copy()
@@ -261,7 +261,7 @@ class DowFrequencyModel:
         for i in range(7):
             self.probs_by_dow[i] = (counts[i] + alpha) / (counts[i].sum() + 10 * alpha)
 
-    def predict_proba(self, X=None, last_digit=None, current_dow=None):
+    def predict_proba(self, X=None, last_digits=None, current_dow=None):
         if current_dow is None or current_dow not in self.probs_by_dow:
             return np.ones(10) / 10.0
         return self.probs_by_dow[int(current_dow)].copy()
@@ -315,7 +315,7 @@ class CatBoostModel:
             )
             self.model.fit(X, y, sample_weight=sample_weights)
 
-    def predict_proba(self, X, last_digit=None, current_dow=None):
+    def predict_proba(self, X, last_digits=None, current_dow=None):
         if cb is None:
             return np.ones(10) / 10.0
             

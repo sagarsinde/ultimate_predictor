@@ -265,7 +265,7 @@ def _print_prediction(market, pred_date_str, m_probs, e_probs,
               f"{md['top_e']:<7} {md['top_e_prob']*100:<7.1f}%")
 
     # Validation summary
-    total_models = len(hybrid_1.models.MODEL_TYPES) * 4  # 4 model types × 4 windows
+    total_models = len(MODEL_TYPES) * 4  # 4 model types × 4 windows
     weights_m = state.get('weights_m', {})
     weights_e = state.get('weights_e', {})
     surviving = len(set(weights_m.keys()) | set(weights_e.keys()))

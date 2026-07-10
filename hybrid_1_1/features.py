@@ -30,8 +30,8 @@ MARKET_CONFIG = {
     'madhur': {
         'csv': 'madhur_dataset.csv',
         'day_col': 'Day_of_Week',
-        'playing_days_per_week': 6,
-        'draws_per_month': 26,
+        'playing_days_per_week': 7,
+        'draws_per_month': 30,
     }
 }
 

@@ -63,9 +63,15 @@ for row in rows:
             jodi = parse_jodi(j_td)
             e_panna = parse_panna(e_th)
             
-            if m_panna and jodi and e_panna:
+            if jodi:
                 m_num = jodi[0]
                 e_num = jodi[1]
+                
+                # If panna is missing but Jodi exists (sometimes happens in the chart), use '000'
+                if not m_panna:
+                    m_panna = '000'
+                if not e_panna:
+                    e_panna = '000'
                 
                 curr_date = start_date + timedelta(days=day_idx)
                 

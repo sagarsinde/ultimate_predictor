@@ -3,6 +3,7 @@ v2/run_backtest.py — Full Validation + Feature Ablation + Model Pruning
 
 Usage: python -m hybrid_1_1.run_backtest kalyan
        python -m hybrid_1_1.run_backtest mb
+       python -m hybrid_1_1.run_backtest madhur
 
 This is the first-time setup command. Run this once (or periodically) to:
   1. Run feature ablation to find which features actually help
@@ -27,12 +28,12 @@ from hybrid_1_1.validator import (
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python -m hybrid_1_1.run_backtest [kalyan|mb]")
+        print("Usage: python -m hybrid_1_1.run_backtest [kalyan|mb|madhur]")
         sys.exit(1)
 
     market = sys.argv[1].lower()
-    if market not in ('kalyan', 'mb'):
-        print(f"Unknown market: {market}. Use 'kalyan' or 'mb'.")
+    if market not in ('kalyan', 'mb', 'madhur'):
+        print(f"Unknown market: {market}. Use 'kalyan', 'mb', or 'madhur'.")
         sys.exit(1)
 
     print(f"\n{'#'*70}")

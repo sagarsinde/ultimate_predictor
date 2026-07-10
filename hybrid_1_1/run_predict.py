@@ -3,6 +3,7 @@ v2/run_predict.py — Daily Prediction
 
 Usage: python -m hybrid_1_1.run_predict kalyan
        python -m hybrid_1_1.run_predict mb
+       python -m hybrid_1_1.run_predict madhur
 
 Loads learned state from the last backtest, trains surviving models
 on current data, and outputs the weighted ensemble prediction.
@@ -20,12 +21,12 @@ from hybrid_1_1.validator import load_state
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python -m hybrid_1_1.run_predict [kalyan|mb]")
+        print("Usage: python -m hybrid_1_1.run_predict [kalyan|mb|madhur]")
         sys.exit(1)
 
     market = sys.argv[1].lower()
-    if market not in ('kalyan', 'mb'):
-        print(f"Unknown market: {market}. Use 'kalyan' or 'mb'.")
+    if market not in ('kalyan', 'mb', 'madhur'):
+        print(f"Unknown market: {market}. Use 'kalyan', 'mb', or 'madhur'.")
         sys.exit(1)
 
     # Check if state exists

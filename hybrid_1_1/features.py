@@ -92,7 +92,10 @@ def build_features(
                        If None, all groups are active.
 
     Returns:
-        X: Feature matrix (pd.DataFrame)
+        X_m: Morning Feature matrix (pd.DataFrame)
+        X_e: Evening Feature matrix (pd.DataFrame)
+        y_morning: Morning target series
+        y_evening: Evening target series
         y_morning: Morning target series
         y_evening: Evening target series
         group_columns: Dict mapping group_name -> list of column names
@@ -319,20 +322,27 @@ def build_features(
         group_columns['consecutive_pairs'] = cols
 
     # ----- Assemble feature matrix -----
-    feature_df = pd.DataFrame.from_dict(feature_dict, orient='index')
+    feature_df_m = pd.DataFrame.from_dict(feature_dict, orient='index')
+    
+    # Evening gets Today's Morning result as an extra highly correlated feature
+    feature_df_e = feature_df_m.copy()
+    feature_df_e['Today_Morning'] = morning
 
     # Drop rows with NaN (first 7 rows due to lags)
-    valid_mask = ~feature_df.isna().any(axis=1)
-    feature_df = feature_df[valid_mask].reset_index(drop=True)
+    valid_mask = ~feature_df_m.isna().any(axis=1)
+    
+    feature_df_m = feature_df_m[valid_mask].reset_index(drop=True)
+    feature_df_e = feature_df_e[valid_mask].reset_index(drop=True)
 
     y_morning_out = pd.Series(morning[valid_mask.values], name='Morning_number').astype(int)
     y_evening_out = pd.Series(evening[valid_mask.values], name='Evening_number').astype(int)
 
     # Also keep dates for time-based splitting
     dates_out = df['Date'].values[valid_mask.values]
-    feature_df['_date'] = dates_out
+    feature_df_m['_date'] = dates_out
+    feature_df_e['_date'] = dates_out
 
-    return feature_df, y_morning_out, y_evening_out, group_columns
+    return feature_df_m, feature_df_e, y_morning_out, y_evening_out, group_columns
 
 
 def build_prediction_features(
@@ -343,11 +353,14 @@ def build_prediction_features(
     Build features and return ONLY the last row's feature vector.
     Used for inference (predicting the next draw).
     """
-    feature_df, _, _, group_columns = build_features(df, active_groups)
-    last_features = feature_df.iloc[[-1]].copy()
+    feature_df_m, feature_df_e, _, _, group_columns = build_features(df, active_groups)
+    last_features_m = feature_df_m.iloc[[-1]].copy()
+    last_features_e = feature_df_e.iloc[[-1]].copy()
 
     # Drop internal date column
-    if '_date' in last_features.columns:
-        last_features = last_features.drop(columns=['_date'])
+    if '_date' in last_features_m.columns:
+        last_features_m = last_features_m.drop(columns=['_date'])
+    if '_date' in last_features_e.columns:
+        last_features_e = last_features_e.drop(columns=['_date'])
 
-    return last_features, group_columns
+    return last_features_m, last_features_e, group_columns

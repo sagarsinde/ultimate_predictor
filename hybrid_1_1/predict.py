@@ -91,7 +91,7 @@ def predict_tomorrow(market, verbose=True):
         window_label = parts[0]
         model_type = parts[1]
 
-        model_m_obj, model_e_obj, feat_cols = _train_single_model(
+        model_m_obj, model_e_obj, _, _ = _train_single_model(
             model_type, window_label, df, market, surviving_groups
         )
 
@@ -99,17 +99,15 @@ def predict_tomorrow(market, verbose=True):
             continue
 
         # Build prediction features from full current data
-        window_draws = get_window_size(market, window_label)
-        pred_df = slice_window(df, window_draws)
-        feat_df, _, _, _ = build_features(pred_df, surviving_groups)
-
-        if len(feat_df) == 0:
-            continue
-
-        last_row = feat_df.iloc[[-1]]
-        feat_only = [c for c in last_row.columns if c != '_date']
-        X_pred = last_row[feat_only].values
-
+        X_pred_m, X_pred_e, group_columns = build_prediction_features(df, surviving_groups)
+    
+        # feature columns
+        feat_cols_m = X_pred_m.columns.tolist()
+        X_m = X_pred_m.values
+        
+        feat_cols_e = X_pred_e.columns.tolist()
+        X_e = X_pred_e.values
+        
         last_m_vals = df['Morning_number'].iloc[-2:].astype(int).tolist()
         if len(last_m_vals) == 1: last_m_vals = [last_m_vals[0], last_m_vals[0]]
         elif len(last_m_vals) == 0: last_m_vals = [0, 0]
@@ -121,7 +119,7 @@ def predict_tomorrow(market, verbose=True):
         current_dow = pred_date.weekday()
 
         m_probs, e_probs = _predict_single(
-            model_m_obj, model_e_obj, model_type, X_pred, last_m_vals, last_e_vals, current_dow
+            model_m_obj, model_e_obj, model_type, X_m, X_e, last_m_vals, last_e_vals, current_dow
         )
 
         # Weighted accumulation

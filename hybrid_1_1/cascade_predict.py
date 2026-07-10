@@ -64,19 +64,20 @@ def run_cascade_prediction(market='kalyan'):
             continue
             
         window_draws = get_window_size(market, window_label)
-        pred_df = slice_window(df, window_draws)
-        feat_df, _, _, _ = build_features(pred_df, surviving_groups)
+        from hybrid_1_1.features import build_prediction_features
+        X_pred_m_df, X_pred_e_df, _ = build_prediction_features(df, surviving_groups)
         
-        last_row = feat_df.iloc[[-1]]
-        cols = [c for c in last_row.columns if c != '_date']
-        X_pred = last_row[cols].values
+        feat_cols_m = X_pred_m_df.columns.tolist()
+        feat_cols_e = X_pred_e_df.columns.tolist()
+        X_pred_m = X_pred_m_df.values
+        X_pred_e = X_pred_e_df.values
         
         if base_X_pred is None:
-            base_X_pred = X_pred.copy()
-            feature_cols = cols
+            base_X_pred = X_pred_e.copy()
+            feature_cols = feat_cols_e
 
         m_probs, _ = _predict_single(
-            model_m_obj, model_e_obj, model_type, X_pred, last_m_vals, last_e_vals, current_dow
+            model_m_obj, model_e_obj, model_type, X_pred_m, X_pred_e, last_m_vals, last_e_vals, current_dow
         )
         
         if weight_m > 0:
@@ -85,7 +86,7 @@ def run_cascade_prediction(market='kalyan'):
         trained_models[model_id] = {
             'e_obj': model_e_obj,
             'type': model_type,
-            'X_pred': X_pred,
+            'X_pred_e': X_pred_e,
             'weight_e': weights_e.get(model_id, 0.0)
         }
 
@@ -103,9 +104,9 @@ def run_cascade_prediction(market='kalyan'):
     print(f"\n  [2/3] Cascade Injection (Predicting Evening given Morning Result)...")
     
     try:
-        m_lag_idx = feature_cols.index('M_lag_1')
+        m_inject_idx = feature_cols.index('Today_Morning')
     except ValueError:
-        m_lag_idx = -1
+        m_inject_idx = -1
         
     me_corr_indices = {}
     for d in range(10):
@@ -139,11 +140,11 @@ def run_cascade_prediction(market='kalyan'):
             model_type = m_data['type']
             
             # Create a localized copy of the feature vector to inject into
-            X_injected = m_data['X_pred'].copy()
+            X_injected = m_data['X_pred_e'].copy()
             
-            # INJECTION: Replace M_lag_1 with the predicted Morning candidate
-            if m_lag_idx != -1:
-                X_injected[0, m_lag_idx] = m_cand
+            # INJECTION: Replace Today_Morning with the predicted Morning candidate
+            if m_inject_idx != -1:
+                X_injected[0, m_inject_idx] = m_cand
                 
             # INJECTION: Replace ME_corr with conditional probability given m_cand
             if me_corr_indices:
@@ -162,7 +163,7 @@ def run_cascade_prediction(market='kalyan'):
             
             # Predict evening using the injected features and fake last_m
             _, e_probs = _predict_single(
-                None, model_e_obj, model_type, X_injected, fake_last_m_vals, last_e_vals, current_dow
+                None, model_e_obj, model_type, None, X_injected, fake_last_m_vals, last_e_vals, current_dow
             )
             
             ensemble_e_probs += weight_e * e_probs

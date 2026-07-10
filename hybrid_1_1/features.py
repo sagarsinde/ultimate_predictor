@@ -26,6 +26,12 @@ MARKET_CONFIG = {
         'day_col': 'Day',
         'playing_days_per_week': 5,  # Mon-Fri
         'draws_per_month': 22,
+    },
+    'madhur': {
+        'csv': 'madhur_dataset.csv',
+        'day_col': 'Day_of_Week',
+        'playing_days_per_week': 6,
+        'draws_per_month': 26,
     }
 }
 

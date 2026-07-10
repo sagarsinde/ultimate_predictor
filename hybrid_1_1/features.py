@@ -56,6 +56,11 @@ def load_raw_data(market: str) -> pd.DataFrame:
     """Load raw CSV for a market, standardize columns."""
     cfg = MARKET_CONFIG[market]
     df = pd.read_csv(cfg['csv'])
+    
+    # Filter out missing/closed days before feature generation
+    df = df[df['Morning_number'].astype(str) != '*'].copy()
+    df = df[df['Evening_number'].astype(str) != '*'].copy()
+    
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values('Date').reset_index(drop=True)
 

@@ -4,15 +4,19 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
 def parse_panna(th):
-    text = th.get_text(strip=True).replace('*', '')
-    if len(text) == 3 and text.isdigit():
-        return text
+    text = th.get_text(strip=True)
+    if len(text) >= 3:
+        panna_str = text[:3]
+        if panna_str.isdigit():
+            return panna_str
     return ""
 
 def parse_jodi(td):
-    text = td.get_text(strip=True).replace('*', '')
-    if len(text) == 2 and text.isdigit():
-        return text
+    text = td.get_text(strip=True)
+    if len(text) >= 2:
+        jodi_str = text[:2]
+        if jodi_str.isdigit():
+            return jodi_str
     return ""
 
 html_file = r"C:\Users\admin\.gemini\antigravity-ide\brain\e1ca7c17-6610-4891-b927-4f6145ddf7de\.system_generated\steps\2436\content.md"

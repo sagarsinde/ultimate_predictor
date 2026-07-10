@@ -1,98 +1,105 @@
+import os
 import re
 import csv
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-def parse_panna(th):
-    text = th.get_text(strip=True)
-    if len(text) >= 3:
-        panna_str = text[:3]
-        if panna_str.isdigit():
-            return panna_str
-    return ""
+def clean_panna(text):
+    text = text.replace('\n', '').replace('\r', '').replace(' ', '')
+    if '*' in text:
+        return '***'
+    if len(text) >= 3 and text[:3].isdigit():
+        return text[:3]
+    return '000'
 
-def parse_jodi(td):
-    text = td.get_text(strip=True)
-    if len(text) >= 2:
-        jodi_str = text[:2]
-        if jodi_str.isdigit():
-            return jodi_str
-    return ""
+def clean_jodi(text):
+    text = text.replace('\n', '').replace('\r', '').replace(' ', '')
+    if '*' in text:
+        return '**'
+    if len(text) >= 2 and text[:2].isdigit():
+        return text[:2]
+    return ''
 
-html_file = r"C:\Users\admin\.gemini\antigravity-ide\brain\e1ca7c17-6610-4891-b927-4f6145ddf7de\.system_generated\steps\2436\content.md"
+def parse_madhur_chart(html_path):
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html = f.read()
 
-with open(html_file, 'r', encoding='utf-8') as f:
-    html = f.read()
-
-soup = BeautifulSoup(html, 'html.parser')
-
-rows = soup.find_all('tr')
-
-out_rows = []
-
-for row in rows:
-    cells = row.find_all(['th', 'td'])
-    if not cells:
-        continue
+    # The HTML is so broken (unclosed th/tr tags) that BeautifulSoup nests the entire table
+    # inside single cells. To bypass this, we use regex to extract the text of every cell linearly.
+    raw_cells = re.split(r'<(?:th|td)[^>]*>', html)
     
-    # First cell is usually date range
-    date_text = cells[0].get_text(strip=True)
-    if 'to' not in date_text:
-        continue
+    clean_cells = []
+    for rc in raw_cells[1:]:
+        content = re.split(r'</(?:th|td)>|<tr', rc)[0]
+        text = re.sub(r'<[^>]+>', '', content).strip()
+        text = text.replace('\n', '').replace('\r', '').replace('\t', '').replace(' ', '')
+        if text:
+            clean_cells.append(text)
     
-    parts = date_text.split('to')
-    start_date_str = parts[0].strip()
-    
-    try:
-        start_date = datetime.strptime(start_date_str, '%d/%m/%Y')
-    except:
-        try:
-            start_date = datetime.strptime(start_date_str, '%d/%m/%y')
-        except:
-            continue
-            
-    # Process the 7 days (Mon to Sun)
-    # Each day is 3 cells: TH (M Panna), TD (Jodi), TH (E Panna)
-    # Index 1,2,3 -> Mon
-    # Index 4,5,6 -> Tue
-    
-    for day_idx in range(7):
-        base_idx = 1 + day_idx * 3
-        if base_idx + 2 < len(cells):
-            m_th = cells[base_idx]
-            j_td = cells[base_idx + 1]
-            e_th = cells[base_idx + 2]
-            
-            m_panna = parse_panna(m_th)
-            jodi = parse_jodi(j_td)
-            e_panna = parse_panna(e_th)
-            
-            if jodi:
-                m_num = jodi[0]
-                e_num = jodi[1]
+    out_rows = []
+    i = 0
+    while i < len(clean_cells):
+        text = clean_cells[i]
+        if 'to' in text:
+            dates = re.findall(r'\d{2}/\d{2}/\d{4}', text)
+            if len(dates) >= 1:
+                try:
+                    start_date = datetime.strptime(dates[0], '%d/%m/%Y')
+                except ValueError:
+                    try:
+                        start_date = datetime.strptime(dates[0], '%d/%m/%y')
+                    except ValueError:
+                        i += 1
+                        continue
                 
-                # If panna is missing but Jodi exists (sometimes happens in the chart), use '000'
-                if not m_panna:
-                    m_panna = '000'
-                if not e_panna:
-                    e_panna = '000'
-                
-                curr_date = start_date + timedelta(days=day_idx)
-                
-                out_rows.append({
-                    'Date': curr_date.strftime('%Y-%m-%d'),
-                    'Morning_panna': m_panna,
-                    'Morning_number': m_num,
-                    'Evening_number': e_num,
-                    'Evening_panna': e_panna
-                })
+                i += 1
+                for day_idx in range(7):
+                    if i + 2 < len(clean_cells):
+                        m_th = clean_cells[i]
+                        j_td = clean_cells[i+1]
+                        e_th = clean_cells[i+2]
+                        i += 3
+                        
+                        m_panna = clean_panna(m_th)
+                        jodi = clean_jodi(j_td)
+                        e_panna = clean_panna(e_th)
+                        
+                        if jodi:
+                            if jodi == '**':
+                                m_num = '*'
+                                e_num = '*'
+                                m_panna = '***'
+                                e_panna = '***'
+                            else:
+                                m_num = jodi[0]
+                                e_num = jodi[1]
+                            
+                            curr_date = start_date + timedelta(days=day_idx)
+                            out_rows.append({
+                                'Date': curr_date.strftime('%Y-%m-%d'),
+                                'Morning_Panna': m_panna,
+                                'Morning_number': m_num,
+                                'Evening_number': e_num,
+                                'Evening_Panna': e_panna
+                            })
+                continue
+        i += 1
 
-# Sort by date
-out_rows.sort(key=lambda x: x['Date'])
+    unique_rows = {}
+    for r in out_rows:
+        unique_rows[r['Date']] = r
+    
+    sorted_rows = [unique_rows[k] for k in sorted(unique_rows.keys())]
 
-with open('madhur_dataset.csv', 'w', newline='') as f:
-    writer = csv.DictWriter(f, fieldnames=['Date', 'Morning_panna', 'Morning_number', 'Evening_number', 'Evening_panna'])
-    writer.writeheader()
-    writer.writerows(out_rows)
+    out_path = 'madhur_dataset.csv'
+    with open(out_path, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['Date', 'Morning_Panna', 'Morning_number', 'Evening_number', 'Evening_Panna'])
+        writer.writeheader()
+        writer.writerows(sorted_rows)
 
-print(f"Scraped {len(out_rows)} valid records to madhur_dataset.csv")
+    print(f"Scraped {len(sorted_rows)} valid records to {out_path}")
+
+if __name__ == '__main__':
+    html_file = r'C:\Users\admin\.gemini\antigravity-ide\brain\e1ca7c17-6610-4891-b927-4f6145ddf7de\.system_generated\steps\2436\content.md'
+    if not os.path.exists(html_file):
+        html_file = 'madhurrecord.html'
+    parse_madhur_chart(html_file)

@@ -224,7 +224,7 @@ def run_walk_forward(
     calibration_data_m = []
     calibration_data_e = []
 
-    window_labels = ['1m', '2m', '3m', 'full']
+    window_labels = ['1m', '2m', '3m']
 
     for period_idx, (train_end, pred_indices) in enumerate(periods):
         if verbose:

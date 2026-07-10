@@ -74,13 +74,19 @@ def _train_single_model(model_type, window_label, train_df, market, active_group
     """
     Train a single model on a given data slice.
 
-    Returns: (model_morning, model_evening, feature_columns)
+    Returns: (model_morning, model_evening, feature_columns_m, feature_columns_e)
     """
+    # SANDBOX RULE
+    if model_type == 'lstm' and window_label != 'full':
+        return None, None, None, None
+    if model_type != 'lstm' and window_label == 'full':
+        return None, None, None, None
+
     window_draws = get_window_size(market, window_label)
     sliced_df = slice_window(train_df, window_draws)
 
     if len(sliced_df) < 10:
-        return None, None, None
+        return None, None, None, None
 
     feature_df_m, feature_df_e, y_m, y_e, group_cols = build_features(sliced_df, active_groups)
 
@@ -92,7 +98,7 @@ def _train_single_model(model_type, window_label, train_df, market, active_group
     X_e = feature_df_e[feature_cols_e].values
 
     if len(X_m) < 5:
-        return None, None, None
+        return None, None, None, None
 
     # Morning sequence and Evening sequence for Markov/Frequency
     m_seq = sliced_df['Morning_number'].astype(int).values
@@ -117,7 +123,7 @@ def _train_single_model(model_type, window_label, train_df, market, active_group
             model_e.fit(None, None, sequence=e_seq, dow_sequence=dow_seq)
     except ImportError:
         # Skip models where dependencies (like CatBoost) aren't installed
-        return None, None, None
+        return None, None, None, None
 
     return model_m, model_e, feature_cols_m, feature_cols_e
 
@@ -224,7 +230,7 @@ def run_walk_forward(
     calibration_data_m = []
     calibration_data_e = []
 
-    window_labels = ['1m', '2m', '3m']
+    window_labels = ['1m', '2m', '3m', 'full']
 
     for period_idx, (train_end, pred_indices) in enumerate(periods):
         if verbose:
@@ -275,11 +281,11 @@ def run_walk_forward(
                     X_pred_m = last_row_m[feat_only_m].values
                     X_pred_e = last_row_e[feat_only_e].values
 
-                    last_m_vals = context_df['Morning_number'].iloc[-2:].astype(int).tolist()
+                    last_m_vals = context_sliced['Morning_number'].iloc[-14:].astype(int).tolist()
                     if len(last_m_vals) == 1: last_m_vals = [last_m_vals[0], last_m_vals[0]]
                     elif len(last_m_vals) == 0: last_m_vals = [0, 0]
-                    
-                    last_e_vals = context_df['Evening_number'].iloc[-2:].astype(int).tolist()
+
+                    last_e_vals = context_sliced['Evening_number'].iloc[-14:].astype(int).tolist()
                     if len(last_e_vals) == 1: last_e_vals = [last_e_vals[0], last_e_vals[0]]
                     elif len(last_e_vals) == 0: last_e_vals = [0, 0]
                     

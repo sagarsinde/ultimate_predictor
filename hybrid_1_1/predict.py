@@ -108,11 +108,11 @@ def predict_tomorrow(market, verbose=True):
         feat_cols_e = X_pred_e.columns.tolist()
         X_e = X_pred_e.values
         
-        last_m_vals = df['Morning_number'].iloc[-2:].astype(int).tolist()
+        last_m_vals = df['Morning_number'].iloc[-14:].astype(int).tolist()
         if len(last_m_vals) == 1: last_m_vals = [last_m_vals[0], last_m_vals[0]]
         elif len(last_m_vals) == 0: last_m_vals = [0, 0]
         
-        last_e_vals = df['Evening_number'].iloc[-2:].astype(int).tolist()
+        last_e_vals = df['Evening_number'].iloc[-14:].astype(int).tolist()
         if len(last_e_vals) == 1: last_e_vals = [last_e_vals[0], last_e_vals[0]]
         elif len(last_e_vals) == 0: last_e_vals = [0, 0]
         

@@ -17,6 +17,15 @@ import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import TimeSeriesSplit
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+except ImportError:
+    torch = None
+    nn = None
+    F = None
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -25,6 +34,75 @@ try:
 except ImportError:
     cb = None
 
+
+class LSTMModel:
+    """LSTM sequence model using PyTorch."""
+    def __init__(self):
+        self.model = None
+        self.lookback = 14
+        self.device = 'cuda' if (torch and torch.cuda.is_available()) else 'cpu'
+
+    def fit(self, X, y, sequence=None, dow_sequence=None):
+        if torch is None:
+            return
+        if sequence is None or len(sequence) < self.lookback + 2:
+            return
+
+        seq = np.array(sequence, dtype=int)
+        
+        X_seqs = []
+        y_targets = []
+        for i in range(self.lookback, len(seq)):
+            X_seqs.append(seq[i - self.lookback : i])
+            y_targets.append(seq[i])
+            
+        X_seqs = torch.tensor(X_seqs, dtype=torch.long)
+        y_targets = torch.tensor(y_targets, dtype=torch.long)
+        
+        X_onehot = F.one_hot(X_seqs, num_classes=10).float()
+        
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.lstm = nn.LSTM(input_size=10, hidden_size=32, batch_first=True)
+                self.fc = nn.Linear(32, 10)
+            def forward(self, x):
+                out, _ = self.lstm(x)
+                return self.fc(out[:, -1, :])
+                
+        self.model = Net().to(self.device)
+        
+        dataset = torch.utils.data.TensorDataset(X_onehot, y_targets)
+        loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
+        
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
+        
+        self.model.train()
+        for epoch in range(15):
+            for bx, by in loader:
+                bx, by = bx.to(self.device), by.to(self.device)
+                optimizer.zero_grad()
+                logits = self.model(bx)
+                loss = criterion(logits, by)
+                loss.backward()
+                optimizer.step()
+
+    def predict_proba(self, X=None, last_digits=None, current_dow=None):
+        if self.model is None or not last_digits or len(last_digits) < self.lookback:
+            return np.ones(10) / 10.0
+            
+        recent = last_digits[-self.lookback:]
+        
+        x_tensor = torch.tensor([recent], dtype=torch.long)
+        x_onehot = F.one_hot(x_tensor, num_classes=10).float().to(self.device)
+        
+        self.model.eval()
+        with torch.no_grad():
+            logits = self.model(x_onehot)
+            probs = F.softmax(logits, dim=1)[0].cpu().numpy()
+            
+        return probs
 
 class XGBoostModel:
     """XGBoost with isotonic calibration via TimeSeriesSplit."""
@@ -202,7 +280,7 @@ class MarkovModel:
         """
         if not last_digits or len(last_digits) < 2:
             return np.ones(10) / 10.0
-        prev, curr = int(last_digits[0]), int(last_digits[1])
+        prev, curr = int(last_digits[-2]), int(last_digits[-1])
         return self.transition[prev][curr].copy()
 
 
@@ -343,10 +421,11 @@ MODEL_TYPES = {
     'markov': MarkovModel,
     'freq': FrequencyModel,
     'dowfreq': DowFrequencyModel,
+    'lstm': LSTMModel,
 }
 
 # Models that need the feature matrix
 FEATURE_MODELS = {'xgb', 'rf', 'cat'}
 
 # Models that need the raw digit sequence
-SEQUENCE_MODELS = {'markov', 'freq', 'dowfreq'}
+SEQUENCE_MODELS = {'markov', 'freq', 'dowfreq', 'lstm'}

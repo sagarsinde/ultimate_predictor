@@ -13,7 +13,7 @@ from datetime import timedelta
 
 from hybrid_1_1.features import (
     load_raw_data, build_features, slice_window,
-    get_window_size, MARKET_CONFIG,
+    get_window_size, MARKET_CONFIG, build_prediction_features
 )
 from hybrid_1_1.models import MODEL_TYPES, FEATURE_MODELS
 from hybrid_1_1.validator import load_state, _train_single_model, _predict_single

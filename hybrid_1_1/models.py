@@ -34,6 +34,8 @@ try:
 except ImportError:
     cb = None
 
+from hybrid_1_1.autogluon_model import AutoGluonModel
+
 
 class LSTMModel:
     """LSTM sequence model using PyTorch."""
@@ -422,10 +424,11 @@ MODEL_TYPES = {
     'freq': FrequencyModel,
     'dowfreq': DowFrequencyModel,
     'lstm': LSTMModel,
+    'ag': AutoGluonModel,
 }
 
 # Models that need the feature matrix
-FEATURE_MODELS = {'xgb', 'rf', 'cat'}
+FEATURE_MODELS = {'xgb', 'rf', 'cat', 'ag'}
 
 # Models that need the raw digit sequence
 SEQUENCE_MODELS = {'markov', 'freq', 'dowfreq', 'lstm'}

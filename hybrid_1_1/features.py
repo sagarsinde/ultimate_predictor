@@ -16,19 +16,19 @@ from collections import Counter
 # ---------------------------------------------------------------------------
 MARKET_CONFIG = {
     'kalyan': {
-        'csv': 'true_kalyan_main_dataset.csv',
+        'csv': 'data/true_kalyan_main_dataset.csv',
         'day_col': 'Day_of_Week',
         'playing_days_per_week': 6,  # Mon-Sat
         'draws_per_month': 26,
     },
     'mb': {
-        'csv': 'main_bazar_dataset.csv',
+        'csv': 'data/main_bazar_dataset.csv',
         'day_col': 'Day',
         'playing_days_per_week': 5,  # Mon-Fri
         'draws_per_month': 22,
     },
     'madhur': {
-        'csv': 'madhur_dataset.csv',
+        'csv': 'data/madhur_dataset.csv',
         'day_col': 'Day_of_Week',
         'playing_days_per_week': 7,
         'draws_per_month': 30,

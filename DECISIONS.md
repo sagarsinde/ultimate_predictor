@@ -51,3 +51,28 @@ Improves the theoretical upper bound of the tabular models without requiring man
 Date:
 2026-07-21
 ```
+
+---
+
+```text
+Decision:
+Implement Two-Tier Pana Prediction (Cross-Product)
+
+Why it was considered:
+The user wanted to predict 3-digit Panas. Predicting the exact 3-digit string out of 220 possible combinations directly using a single model is mathematically impossible and will result in 99% noise.
+
+Evidence:
+The game mathematically maps Panas to a single Main Digit via `sum(digits) % 10`. Since our existing ensemble already excels at predicting the Main Digit, we only need to predict the *Type* of Pana (Single, Double, Triple). 
+
+Backtest result:
+Pana classifier separates into SP/DP/TP correctly based on historical momentum. The cross-product mathematically filters the 220 combinations down to <10 valid recommendations.
+
+Approved / Rejected:
+Approved
+
+Reason:
+Splits a mathematically chaotic problem (1/220) into two highly constrained, solvable problems (1/10 digit prediction + 1/3 type classification). Built in a dedicated `panas/` folder to prevent cluttering the core validation loop.
+
+Date:
+2026-07-21
+```

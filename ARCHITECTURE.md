@@ -20,9 +20,17 @@ graph TD
     
     subgraph Daily Inference
         H --> I(hybrid_1_1/predict.py)
-        I --> J[Probability Ensemble]
+        I --> J[Tier 1: Probability Ensemble]
+        
+        M[panas/features.py] --> N[Tier 2: Pana Type Classifier]
+        N --> O[SP/DP/TP Probabilities]
+        
         J --> K[Confidence Calibration]
-        K --> L((Final Prediction))
+        K --> L((Main Digit Prediction))
+        
+        L --> P{Cross-Product}
+        O --> P
+        P --> Q((Top Recommended Panas))
     end
 ```
 
@@ -40,8 +48,13 @@ graph TD
 - **Model Pruning:** Eliminates weak models that do not significantly contribute to the top 95% of cumulative probability.
 
 ### 3. Prediction Pipeline (`predict.py`)
-- **Probability Ensemble:** Combines the predictions from all surviving models using their learned weights.
-- **Confidence Calibration:** Maps the entropy/spread of the ensemble predictions to a confidence signal (`STRONG`, `GOOD`, `MARGINAL`, `SKIP`).
+- **Tier 1 (Main Digit):** 
+  - **Probability Ensemble:** Combines the predictions from all surviving models using their learned weights.
+  - **Confidence Calibration:** Maps the entropy/spread of the ensemble predictions to a confidence signal (`STRONG`, `GOOD`, `MARGINAL`, `SKIP`).
+- **Tier 2 (Pana Type):**
+  - **Pana Classifier (`panas/model.py`):** Trains an XGBoost classifier on historical momentum (days since last Double Pana, Single Pana runs) to predict whether tomorrow will be an SP, DP, or TP.
+- **The Cross-Product:**
+  - Automatically maps the top predicted Main Digit against the top predicted Pana Type to output the exact subset of recommended Panas (e.g. Double Panas that sum to 3).
 
 ### 4. State Management
 - Saves the exact surviving features, weights, and calibration thresholds to `hybrid_1_1/state/` so inference scripts run instantly without retraining.

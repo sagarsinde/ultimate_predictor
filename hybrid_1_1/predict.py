@@ -17,6 +17,8 @@ from hybrid_1_1.features import (
 )
 from hybrid_1_1.models import MODEL_TYPES, FEATURE_MODELS
 from hybrid_1_1.validator import load_state, _train_single_model, _predict_single
+from panas.model import PanaTypeClassifier
+from panas.universe import get_panas_for_digit
 
 
 def get_next_playing_date(last_date, market):
@@ -167,6 +169,29 @@ def predict_tomorrow(market, verbose=True):
             jodi_probs[f"{mm}{ee}"] = ensemble_m_probs[mm] * ensemble_e_probs[ee]
     top4_jodis = sorted(jodi_probs.items(), key=lambda x: x[1], reverse=True)[:4]
 
+    # ---- Tier 2: Pana Prediction ----
+    # Train Pana Classifier
+    if verbose:
+        print("\n  Training Tier-2 Pana Classifier...")
+    pana_clf_m = PanaTypeClassifier()
+    pana_clf_m.fit(df['Morning_Panna'])
+    pana_probs_m = pana_clf_m.predict_proba(df['Morning_Panna'])
+    
+    pana_clf_e = PanaTypeClassifier()
+    pana_clf_e.fit(df['Evening_Panna'])
+    pana_probs_e = pana_clf_e.predict_proba(df['Evening_Panna'])
+    
+    pana_types = ['SP', 'DP', 'TP']
+    top_pana_type_m = pana_types[np.argmax(pana_probs_m)]
+    top_pana_type_e = pana_types[np.argmax(pana_probs_e)]
+    
+    # Calculate recommended Panas (Cross-Product)
+    top_digit_m = m_ranking[0]
+    recommended_panas_m = get_panas_for_digit(top_digit_m, top_pana_type_m)
+    
+    top_digit_e = e_ranking[0]
+    recommended_panas_e = get_panas_for_digit(top_digit_e, top_pana_type_e)
+
     # ---- Print formatted output ----
     if verbose:
         _print_prediction(
@@ -177,6 +202,8 @@ def predict_tomorrow(market, verbose=True):
             m_hist_rate, e_hist_rate,
             top4_jodis, model_details,
             state,
+            pana_probs_m, pana_probs_e, top_pana_type_m, top_pana_type_e,
+            recommended_panas_m, recommended_panas_e
         )
 
     return {
@@ -224,7 +251,9 @@ def _get_historical_rate(top_prob, calibrator):
 def _print_prediction(market, pred_date_str, m_probs, e_probs,
                       m_ranking, e_ranking, m_signal, e_signal,
                       m_hist_rate, e_hist_rate,
-                      top4_jodis, model_details, state):
+                      top4_jodis, model_details, state,
+                      pana_probs_m, pana_probs_e, top_pana_type_m, top_pana_type_e,
+                      rec_panas_m, rec_panas_e):
     """Formatted prediction output."""
 
     print(f"\n{'═'*70}")
@@ -240,6 +269,10 @@ def _print_prediction(market, pred_date_str, m_probs, e_probs,
         prob_str = f"{m_probs[d]*100:.1f}%"
         hist_str = f"{m_hist_rate*100:.1f}%" if m_hist_rate and rank == 1 else "—"
         print(f"  {rank:<6} {d:<7} {prob_str:<15} {hist_str:<16}")
+        
+    print(f"\n    [Tier-2] Predicted Pana Type: {top_pana_type_m} "
+          f"(SP: {pana_probs_m[0]*100:.1f}%, DP: {pana_probs_m[1]*100:.1f}%, TP: {pana_probs_m[2]*100:.1f}%)")
+    print(f"    ⭐ Recommended Panas for Digit {m_ranking[0]}: {', '.join(rec_panas_m)}")
 
     # Evening
     print(f"\n  EVENING (Close):  [{e_signal}]")
@@ -250,6 +283,10 @@ def _print_prediction(market, pred_date_str, m_probs, e_probs,
         prob_str = f"{e_probs[d]*100:.1f}%"
         hist_str = f"{e_hist_rate*100:.1f}%" if e_hist_rate and rank == 1 else "—"
         print(f"  {rank:<6} {d:<7} {prob_str:<15} {hist_str:<16}")
+
+    print(f"\n    [Tier-2] Predicted Pana Type: {top_pana_type_e} "
+          f"(SP: {pana_probs_e[0]*100:.1f}%, DP: {pana_probs_e[1]*100:.1f}%, TP: {pana_probs_e[2]*100:.1f}%)")
+    print(f"    ⭐ Recommended Panas for Digit {e_ranking[0]}: {', '.join(rec_panas_e)}")
 
     # Jodi
     print(f"\n  TOP 4 JODI:")

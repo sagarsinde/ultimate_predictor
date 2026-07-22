@@ -45,7 +45,7 @@ def main():
     surviving_groups = run_feature_ablation(market, verbose=True)
 
     # Step 2: Walk-forward validation with surviving features
-    print("\n[STEP 2/5] Walk-Forward Validation with surviving features...")
+    print("\n[STEP 2/6] Walk-Forward Validation with surviving features...")
     avg_metrics, (cal_data_m, cal_data_e) = run_walk_forward(
         market, active_groups=surviving_groups, verbose=True
     )
@@ -55,7 +55,7 @@ def main():
         sys.exit(1)
 
     # Step 3: Learn weights
-    print("\n[STEP 3/5] Learning model weights from Top-3 Accuracy...")
+    print("\n[STEP 3/6] Learning model weights from Top-3 Accuracy...")
     raw_weights_dict = learn_weights(avg_metrics)
 
     print(f"\n  Raw weights (Morning):")
@@ -67,7 +67,7 @@ def main():
         print(f"    {mid:<15} {w:.4f}")
 
     # Step 4: Prune weak models
-    print("\n[STEP 4/5] Pruning weak models (95% cumulative weight)...")
+    print("\n[STEP 4/6] Pruning weak models (95% cumulative weight)...")
     pruned_weights_dict = prune_models(raw_weights_dict, cumulative_threshold=0.95)
 
     print(f"\n  Surviving Morning Models: {len(pruned_weights_dict['weights_m'])}")
@@ -79,7 +79,7 @@ def main():
         print(f"    {mid:<15} {w:.4f} (renormalized)")
 
     # Step 5: Build confidence calibration
-    print("\n[STEP 5/5] Building confidence calibration...")
+    print("\n[STEP 5/6] Building confidence calibration...")
     calibrator_m, thresholds_m = build_calibration(cal_data_m)
     calibrator_e, thresholds_e = build_calibration(cal_data_e)
 
@@ -98,6 +98,32 @@ def main():
         thresholds_m, thresholds_e,
         avg_metrics,
     )
+
+    print(f"\n[STEP 6/6] Training & Saving Winning Models to Disk...")
+    from hybrid_1_1.validator import _train_single_model
+    from hybrid_1_1.features import load_raw_data
+    df = load_raw_data(market)
+    
+    active_m = set(pruned_weights_dict['weights_m'].keys())
+    active_e = set(pruned_weights_dict['weights_e'].keys())
+    active_models = active_m | active_e
+    
+    dir_path = os.path.join("trained_models", "backtest_winners", market)
+    os.makedirs(dir_path, exist_ok=True)
+    
+    for model_id in sorted(active_models):
+        parts = model_id.split('_', 1)
+        window_label, model_type = parts[0], parts[1]
+        
+        print(f"  -> Retraining {model_id} on latest data...")
+        model_m_obj, model_e_obj, _, _ = _train_single_model(
+            model_type, window_label, df, market, surviving_groups
+        )
+        
+        if model_m_obj and model_id in active_m:
+            model_m_obj.save_models(dir_path, f"{model_id}_morning")
+        if model_e_obj and model_id in active_e:
+            model_e_obj.save_models(dir_path, f"{model_id}_evening")
 
     print(f"\n{'#'*70}")
     print(f"  BACKTEST COMPLETE for {market.upper()}")

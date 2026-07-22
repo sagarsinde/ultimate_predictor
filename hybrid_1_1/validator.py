@@ -242,6 +242,7 @@ def run_walk_forward(
 
         for wl in window_labels:
             for mt in MODEL_TYPES.keys():
+                if mt == 'ag': continue
                 model_id = f"{wl}_{mt}"
 
                 # Train

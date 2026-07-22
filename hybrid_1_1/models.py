@@ -38,6 +38,7 @@ try:
 except ImportError:
     AutoGluonModel = None
 
+HAS_GPU = torch.cuda.is_available() if torch else False
 
 # --- HELPER FUNCS ---
 def get_path(dir_path, name, ext):
@@ -73,6 +74,7 @@ class XGBoostModel:
         base = xgb.XGBClassifier(
             objective='multi:softprob', num_class=10, eval_metric='mlogloss',
             max_depth=5, learning_rate=0.04, n_estimators=200, tree_method='hist',
+            device='cuda' if HAS_GPU else 'cpu',
             random_state=42, verbosity=0
         )
         
@@ -121,7 +123,8 @@ class LightGBMModel:
         
         self.model = lgb.LGBMClassifier(
             n_estimators=150, max_depth=5, learning_rate=0.05,
-            objective='multiclass', num_class=10, random_state=42, n_jobs=-1, verbose=-1
+            objective='multiclass', num_class=10, random_state=42, n_jobs=-1, verbose=-1,
+            device='gpu' if HAS_GPU else 'cpu'
         )
         self.model.fit(X, y)
 
@@ -181,7 +184,8 @@ class CatBoostModel:
         
         self.model = cb.CatBoostClassifier(
             iterations=150, depth=4, learning_rate=0.05,
-            loss_function='MultiClass', verbose=0, random_seed=42, allow_writing_files=False
+            loss_function='MultiClass', verbose=0, random_seed=42, allow_writing_files=False,
+            task_type='GPU' if HAS_GPU else 'CPU'
         )
         self.model.fit(X, y)
 

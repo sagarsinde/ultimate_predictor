@@ -257,7 +257,7 @@ class LSTMModel:
                 optimizer.step()
 
     def predict_proba(self, X=None, last_digits=None, current_dow=None):
-        if self.model is None or not last_digits or len(last_digits) < self.lookback:
+        if self.model is None or last_digits is None or len(last_digits) < self.lookback:
             return np.ones(10) / 10.0
             
         recent = last_digits[-self.lookback:]
@@ -277,7 +277,7 @@ class LSTMModel:
     def load_models(self, dir_path, name):
         if torch is not None:
             self.model = self.NetClass().to(self.device)
-            self.model.load_state_dict(torch.load(get_path(dir_path, name, "pt")))
+            self.model.load_state_dict(torch.load(get_path(dir_path, name, "pt"), map_location=torch.device(self.device)))
 
 
 class MarkovModel:
@@ -294,7 +294,7 @@ class MarkovModel:
         self.transition = self.transition / row_sums
 
     def predict_proba(self, X=None, last_digits=None, current_dow=None):
-        if self.transition is None or not last_digits or len(last_digits) < 2:
+        if self.transition is None or last_digits is None or len(last_digits) < 2:
             return np.ones(10) / 10.0
         prev, curr = int(last_digits[-2]), int(last_digits[-1])
         return self.transition[prev][curr].copy()

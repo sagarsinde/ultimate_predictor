@@ -1,0 +1,529 @@
+{
+    "2010": {
+        "Amavasya": [
+            "January 15, 2010, Friday",
+            "February 13, 2010, Saturday",
+            "March 15, 2010, Monday",
+            "April 14, 2010, Wednesday",
+            "May 13, 2010, Thursday",
+            "May 14, 2010, Friday",
+            "June 12, 2010, Saturday",
+            "July 11, 2010, Sunday",
+            "August 10, 2010, Tuesday",
+            "September 8, 2010, Wednesday",
+            "October 7, 2010, Thursday",
+            "November 6, 2010, Saturday",
+            "December 5, 2010, Sunday"
+        ],
+        "Purnima": [
+            "January 30, 2010, Saturday",
+            "February 28, 2010, Sunday",
+            "March 30, 2010, Tuesday",
+            "April 28, 2010, Wednesday",
+            "May 27, 2010, Thursday",
+            "June 26, 2010, Saturday",
+            "July 25, 2010, Sunday",
+            "August 24, 2010, Tuesday",
+            "September 23, 2010, Thursday",
+            "October 22, 2010, Friday",
+            "November 21, 2010, Sunday",
+            "December 21, 2010, Tuesday"
+        ]
+    },
+    "2011": {
+        "Amavasya": [
+            "January 4, 2011, Tuesday",
+            "February 2, 2011, Wednesday",
+            "March 4, 2011, Friday",
+            "April 3, 2011, Sunday",
+            "May 3, 2011, Tuesday",
+            "June 1, 2011, Wednesday",
+            "July 1, 2011, Friday",
+            "July 30, 2011, Saturday",
+            "August 29, 2011, Monday",
+            "September 27, 2011, Tuesday",
+            "October 26, 2011, Wednesday",
+            "November 25, 2011, Friday",
+            "December 24, 2011, Saturday"
+        ],
+        "Purnima": [
+            "January 19, 2011, Wednesday",
+            "February 18, 2011, Friday",
+            "March 19, 2011, Saturday",
+            "April 18, 2011, Monday",
+            "May 17, 2011, Tuesday",
+            "June 15, 2011, Wednesday",
+            "July 15, 2011, Friday",
+            "August 13, 2011, Saturday",
+            "September 12, 2011, Monday",
+            "October 11, 2011, Tuesday",
+            "November 10, 2011, Thursday",
+            "December 10, 2011, Saturday"
+        ]
+    },
+    "2012": {
+        "Amavasya": [
+            "January 23, 2012, Monday",
+            "February 21, 2012, Tuesday",
+            "March 22, 2012, Thursday",
+            "April 21, 2012, Saturday",
+            "May 20, 2012, Sunday",
+            "June 19, 2012, Tuesday",
+            "July 19, 2012, Thursday",
+            "August 17, 2012, Friday",
+            "September 15, 2012, Saturday",
+            "September 16, 2012, Sunday",
+            "October 15, 2012, Monday",
+            "November 13, 2012, Tuesday",
+            "December 13, 2012, Thursday"
+        ],
+        "Purnima": [
+            "January 9, 2012, Monday",
+            "February 7, 2012, Tuesday",
+            "March 8, 2012, Thursday",
+            "April 6, 2012, Friday",
+            "May 6, 2012, Sunday",
+            "June 4, 2012, Monday",
+            "July 3, 2012, Tuesday",
+            "August 2, 2012, Thursday",
+            "August 31, 2012, Friday",
+            "September 30, 2012, Sunday",
+            "October 29, 2012, Monday",
+            "November 28, 2012, Wednesday",
+            "December 28, 2012, Friday"
+        ]
+    },
+    "2013": {
+        "Amavasya": [
+            "January 11, 2013, Friday",
+            "February 10, 2013, Sunday",
+            "March 11, 2013, Monday",
+            "April 10, 2013, Wednesday",
+            "May 9, 2013, Thursday",
+            "June 8, 2013, Saturday",
+            "July 8, 2013, Monday",
+            "August 6, 2013, Tuesday",
+            "September 5, 2013, Thursday",
+            "October 4, 2013, Friday",
+            "November 3, 2013, Sunday",
+            "December 2, 2013, Monday"
+        ],
+        "Purnima": [
+            "January 27, 2013, Sunday",
+            "February 25, 2013, Monday",
+            "March 27, 2013, Wednesday",
+            "April 25, 2013, Thursday",
+            "May 25, 2013, Saturday",
+            "June 23, 2013, Sunday",
+            "July 22, 2013, Monday",
+            "August 21, 2013, Wednesday",
+            "September 19, 2013, Thursday",
+            "October 18, 2013, Friday",
+            "November 17, 2013, Sunday",
+            "December 17, 2013, Tuesday"
+        ]
+    },
+    "2014": {
+        "Amavasya": [
+            "January 1, 2014, Wednesday",
+            "January 30, 2014, Thursday",
+            "March 1, 2014, Saturday",
+            "March 30, 2014, Sunday",
+            "April 29, 2014, Tuesday",
+            "May 28, 2014, Wednesday",
+            "June 27, 2014, Friday",
+            "July 26, 2014, Saturday",
+            "August 25, 2014, Monday",
+            "September 24, 2014, Wednesday",
+            "October 23, 2014, Thursday",
+            "November 22, 2014, Saturday",
+            "December 22, 2014, Monday"
+        ],
+        "Purnima": [
+            "January 16, 2014, Thursday",
+            "February 14, 2014, Friday",
+            "March 16, 2014, Sunday",
+            "April 15, 2014, Tuesday",
+            "May 14, 2014, Wednesday",
+            "June 13, 2014, Friday",
+            "July 12, 2014, Saturday",
+            "August 10, 2014, Sunday",
+            "September 9, 2014, Tuesday",
+            "October 8, 2014, Wednesday",
+            "November 6, 2014, Thursday",
+            "December 6, 2014, Saturday"
+        ]
+    },
+    "2015": {
+        "Amavasya": [
+            "January 20, 2015, Tuesday",
+            "February 18, 2015, Wednesday",
+            "March 20, 2015, Friday",
+            "April 18, 2015, Saturday",
+            "May 18, 2015, Monday",
+            "June 16, 2015, Tuesday",
+            "July 15, 2015, Wednesday",
+            "July 16, 2015, Thursday",
+            "August 14, 2015, Friday",
+            "September 13, 2015, Sunday",
+            "October 12, 2015, Monday",
+            "November 11, 2015, Wednesday",
+            "December 11, 2015, Friday"
+        ],
+        "Purnima": [
+            "January 5, 2015, Monday",
+            "February 3, 2015, Tuesday",
+            "March 5, 2015, Thursday",
+            "April 4, 2015, Saturday",
+            "May 4, 2015, Monday",
+            "June 2, 2015, Tuesday",
+            "July 2, 2015, Thursday",
+            "July 31, 2015, Friday",
+            "August 29, 2015, Saturday",
+            "September 28, 2015, Monday",
+            "October 27, 2015, Tuesday",
+            "November 25, 2015, Wednesday",
+            "December 25, 2015, Friday"
+        ]
+    },
+    "2016": {
+        "Amavasya": [
+            "January 10, 2016, Sunday",
+            "February 8, 2016, Monday",
+            "March 9, 2016, Wednesday",
+            "April 7, 2016, Thursday",
+            "May 6, 2016, Friday",
+            "June 5, 2016, Sunday",
+            "July 4, 2016, Monday",
+            "August 2, 2016, Tuesday",
+            "September 1, 2016, Thursday",
+            "September 30, 2016, Friday",
+            "October 30, 2016, Sunday",
+            "November 29, 2016, Tuesday",
+            "December 29, 2016, Thursday"
+        ],
+        "Purnima": [
+            "January 24, 2016, Sunday",
+            "February 22, 2016, Monday",
+            "March 23, 2016, Wednesday",
+            "April 22, 2016, Friday",
+            "May 21, 2016, Saturday",
+            "June 20, 2016, Monday",
+            "July 19, 2016, Tuesday",
+            "August 18, 2016, Thursday",
+            "September 16, 2016, Friday",
+            "October 16, 2016, Sunday",
+            "November 14, 2016, Monday",
+            "December 13, 2016, Tuesday"
+        ]
+    },
+    "2017": {
+        "Amavasya": [
+            "January 27, 2017, Friday",
+            "February 26, 2017, Sunday",
+            "March 28, 2017, Tuesday",
+            "April 26, 2017, Wednesday",
+            "May 25, 2017, Thursday",
+            "June 24, 2017, Saturday",
+            "July 23, 2017, Sunday",
+            "August 21, 2017, Monday",
+            "September 20, 2017, Wednesday",
+            "October 19, 2017, Thursday",
+            "November 18, 2017, Saturday",
+            "December 18, 2017, Monday"
+        ],
+        "Purnima": [
+            "January 12, 2017, Thursday",
+            "February 10, 2017, Friday",
+            "March 12, 2017, Sunday",
+            "April 11, 2017, Tuesday",
+            "May 10, 2017, Wednesday",
+            "June 9, 2017, Friday",
+            "July 9, 2017, Sunday",
+            "August 7, 2017, Monday",
+            "September 6, 2017, Wednesday",
+            "October 5, 2017, Thursday",
+            "November 4, 2017, Saturday",
+            "December 3, 2017, Sunday"
+        ]
+    },
+    "2018": {
+        "Amavasya": [
+            "January 16, 2018, Tuesday",
+            "February 15, 2018, Thursday",
+            "March 17, 2018, Saturday",
+            "April 16, 2018, Monday",
+            "May 15, 2018, Tuesday",
+            "June 13, 2018, Wednesday",
+            "July 13, 2018, Friday",
+            "August 11, 2018, Saturday",
+            "September 9, 2018, Sunday",
+            "October 9, 2018, Tuesday",
+            "November 7, 2018, Wednesday",
+            "December 7, 2018, Friday"
+        ],
+        "Purnima": [
+            "January 2, 2018, Tuesday",
+            "January 31, 2018, Wednesday",
+            "March 1, 2018, Thursday",
+            "March 31, 2018, Saturday",
+            "April 30, 2018, Monday",
+            "May 29, 2018, Tuesday",
+            "June 28, 2018, Thursday",
+            "July 27, 2018, Friday",
+            "August 26, 2018, Sunday",
+            "September 25, 2018, Tuesday",
+            "October 24, 2018, Wednesday",
+            "November 23, 2018, Friday",
+            "December 22, 2018, Saturday"
+        ]
+    },
+    "2019": {
+        "Amavasya": [
+            "January 5, 2019, Saturday",
+            "February 4, 2019, Monday",
+            "March 6, 2019, Wednesday",
+            "April 5, 2019, Friday",
+            "May 4, 2019, Saturday",
+            "June 3, 2019, Monday",
+            "July 2, 2019, Tuesday",
+            "August 1, 2019, Thursday",
+            "August 30, 2019, Friday",
+            "September 28, 2019, Saturday",
+            "October 28, 2019, Monday",
+            "November 26, 2019, Tuesday",
+            "December 26, 2019, Thursday"
+        ],
+        "Purnima": [
+            "January 21, 2019, Monday",
+            "February 19, 2019, Tuesday",
+            "March 21, 2019, Thursday",
+            "April 19, 2019, Friday",
+            "May 18, 2019, Saturday",
+            "June 17, 2019, Monday",
+            "July 16, 2019, Tuesday",
+            "August 15, 2019, Thursday",
+            "September 14, 2019, Saturday",
+            "October 13, 2019, Sunday",
+            "November 12, 2019, Tuesday",
+            "December 12, 2019, Thursday"
+        ]
+    },
+    "2020": {
+        "Amavasya": [
+            "January 24, 2020, Friday",
+            "February 23, 2020, Sunday",
+            "March 24, 2020, Tuesday",
+            "April 22, 2020, Wednesday",
+            "May 22, 2020, Friday",
+            "June 21, 2020, Sunday",
+            "July 20, 2020, Monday",
+            "August 19, 2020, Wednesday",
+            "September 17, 2020, Thursday",
+            "October 16, 2020, Friday",
+            "November 15, 2020, Sunday",
+            "December 14, 2020, Monday"
+        ],
+        "Purnima": [
+            "January 10, 2020, Friday",
+            "February 9, 2020, Sunday",
+            "March 9, 2020, Monday",
+            "April 8, 2020, Wednesday",
+            "May 7, 2020, Thursday",
+            "June 5, 2020, Friday",
+            "July 5, 2020, Sunday",
+            "August 3, 2020, Monday",
+            "September 2, 2020, Wednesday",
+            "October 1, 2020, Thursday",
+            "October 31, 2020, Saturday",
+            "November 30, 2020, Monday",
+            "December 30, 2020, Wednesday"
+        ]
+    },
+    "2021": {
+        "Amavasya": [
+            "January 13, 2021, Wednesday",
+            "February 11, 2021, Thursday",
+            "March 13, 2021, Saturday",
+            "April 11, 2021, Sunday",
+            "May 11, 2021, Tuesday",
+            "June 10, 2021, Thursday",
+            "July 9, 2021, Friday",
+            "August 8, 2021, Sunday",
+            "September 7, 2021, Tuesday",
+            "October 6, 2021, Wednesday",
+            "November 4, 2021, Thursday",
+            "December 4, 2021, Saturday"
+        ],
+        "Purnima": [
+            "January 28, 2021, Thursday",
+            "February 27, 2021, Saturday",
+            "March 28, 2021, Sunday",
+            "April 27, 2021, Tuesday",
+            "May 26, 2021, Wednesday",
+            "June 24, 2021, Thursday",
+            "July 24, 2021, Saturday",
+            "August 22, 2021, Sunday",
+            "September 20, 2021, Monday",
+            "October 20, 2021, Wednesday",
+            "November 19, 2021, Friday",
+            "December 19, 2021, Sunday"
+        ]
+    },
+    "2022": {
+        "Amavasya": [
+            "January 2, 2022, Sunday",
+            "February 1, 2022, Tuesday",
+            "March 2, 2022, Wednesday",
+            "April 1, 2022, Friday",
+            "April 30, 2022, Saturday",
+            "May 30, 2022, Monday",
+            "June 29, 2022, Wednesday",
+            "July 28, 2022, Thursday",
+            "August 27, 2022, Saturday",
+            "September 25, 2022, Sunday",
+            "October 25, 2022, Tuesday",
+            "November 23, 2022, Wednesday",
+            "December 23, 2022, Friday"
+        ],
+        "Purnima": [
+            "January 17, 2022, Monday",
+            "February 16, 2022, Wednesday",
+            "March 18, 2022, Friday",
+            "April 16, 2022, Saturday",
+            "May 16, 2022, Monday",
+            "June 14, 2022, Tuesday",
+            "July 13, 2022, Wednesday",
+            "August 12, 2022, Friday",
+            "September 10, 2022, Saturday",
+            "October 9, 2022, Sunday",
+            "November 8, 2022, Tuesday",
+            "December 8, 2022, Thursday"
+        ]
+    },
+    "2023": {
+        "Amavasya": [
+            "January 21, 2023, Saturday",
+            "February 20, 2023, Monday",
+            "March 21, 2023, Tuesday",
+            "April 20, 2023, Thursday",
+            "May 19, 2023, Friday",
+            "June 18, 2023, Sunday",
+            "July 17, 2023, Monday",
+            "August 15, 2023, Tuesday",
+            "August 16, 2023, Wednesday",
+            "September 14, 2023, Thursday",
+            "October 14, 2023, Saturday",
+            "November 13, 2023, Monday",
+            "December 12, 2023, Tuesday"
+        ],
+        "Purnima": [
+            "January 6, 2023, Friday",
+            "February 5, 2023, Sunday",
+            "March 7, 2023, Tuesday",
+            "April 6, 2023, Thursday",
+            "May 5, 2023, Friday",
+            "June 4, 2023, Sunday",
+            "July 3, 2023, Monday",
+            "August 1, 2023, Tuesday",
+            "August 31, 2023, Thursday",
+            "September 29, 2023, Friday",
+            "October 28, 2023, Saturday",
+            "November 27, 2023, Monday",
+            "December 26, 2023, Tuesday"
+        ]
+    },
+    "2024": {
+        "Amavasya": [
+            "January 11, 2024, Thursday",
+            "February 9, 2024, Friday",
+            "March 10, 2024, Sunday",
+            "April 8, 2024, Monday",
+            "May 8, 2024, Wednesday",
+            "June 6, 2024, Thursday",
+            "July 5, 2024, Friday",
+            "August 4, 2024, Sunday",
+            "September 2, 2024, Monday",
+            "October 2, 2024, Wednesday",
+            "November 1, 2024, Friday",
+            "December 1, 2024, Sunday",
+            "December 30, 2024, Monday"
+        ],
+        "Purnima": [
+            "January 25, 2024, Thursday",
+            "February 24, 2024, Saturday",
+            "March 25, 2024, Monday",
+            "April 23, 2024, Tuesday",
+            "May 23, 2024, Thursday",
+            "June 22, 2024, Saturday",
+            "July 21, 2024, Sunday",
+            "August 19, 2024, Monday",
+            "September 18, 2024, Wednesday",
+            "October 17, 2024, Thursday",
+            "November 15, 2024, Friday",
+            "December 15, 2024, Sunday"
+        ]
+    },
+    "2025": {
+        "Amavasya": [
+            "January 29, 2025, Wednesday",
+            "February 27, 2025, Thursday",
+            "March 29, 2025, Saturday",
+            "April 27, 2025, Sunday",
+            "May 27, 2025, Tuesday",
+            "June 25, 2025, Wednesday",
+            "July 24, 2025, Thursday",
+            "August 23, 2025, Saturday",
+            "September 21, 2025, Sunday",
+            "October 21, 2025, Tuesday",
+            "November 20, 2025, Thursday",
+            "December 19, 2025, Friday"
+        ],
+        "Purnima": [
+            "January 13, 2025, Monday",
+            "February 12, 2025, Wednesday",
+            "March 14, 2025, Friday",
+            "April 12, 2025, Saturday",
+            "May 12, 2025, Monday",
+            "June 11, 2025, Wednesday",
+            "July 10, 2025, Thursday",
+            "August 9, 2025, Saturday",
+            "September 7, 2025, Sunday",
+            "October 7, 2025, Tuesday",
+            "November 5, 2025, Wednesday",
+            "December 4, 2025, Thursday"
+        ]
+    },
+    "2026": {
+        "Amavasya": [
+            "January 18, 2026, Sunday",
+            "February 17, 2026, Tuesday",
+            "March 19, 2026, Thursday",
+            "April 17, 2026, Friday",
+            "May 16, 2026, Saturday",
+            "June 14, 2026, Sunday",
+            "June 15, 2026, Monday",
+            "July 14, 2026, Tuesday",
+            "August 12, 2026, Wednesday",
+            "September 11, 2026, Friday",
+            "October 10, 2026, Saturday",
+            "November 9, 2026, Monday",
+            "December 8, 2026, Tuesday"
+        ],
+        "Purnima": [
+            "January 3, 2026, Saturday",
+            "February 1, 2026, Sunday",
+            "March 3, 2026, Tuesday",
+            "April 2, 2026, Thursday",
+            "May 1, 2026, Friday",
+            "May 31, 2026, Sunday",
+            "June 29, 2026, Monday",
+            "July 29, 2026, Wednesday",
+            "August 28, 2026, Friday",
+            "September 26, 2026, Saturday",
+            "October 26, 2026, Monday",
+            "November 24, 2026, Tuesday",
+            "December 24, 2026, Thursday"
+        ]
+    }
+}

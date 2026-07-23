@@ -3,8 +3,7 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-from hybrid_1_1.data_loader import DataLoader
-from hybrid_1_1.features import FeatureEngineer
+from hybrid_1_1.features import load_raw_data, build_prediction_features, ALL_FEATURE_GROUPS
 from hybrid_1_1.autogluon_model import AutoGluonModel
 
 def train_autogluon_standalone(market, time_limit=3600):
@@ -13,16 +12,14 @@ def train_autogluon_standalone(market, time_limit=3600):
     print(f"==================================================")
     
     # 1. Load Data
-    loader = DataLoader(market=market)
-    df = loader.load_data()
+    df = load_raw_data(market)
     
     if df is None or len(df) == 0:
         print(f"Failed to load data for {market}")
         return
         
     # 2. Build Features
-    fe = FeatureEngineer()
-    df_features = fe.build_features(df)
+    _, _, df_features = build_prediction_features(df, ALL_FEATURE_GROUPS)
     
     print(f"Total rows: {len(df_features)}")
     

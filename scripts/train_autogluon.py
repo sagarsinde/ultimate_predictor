@@ -3,7 +3,7 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-from hybrid_1_1.features import load_raw_data, build_prediction_features, ALL_FEATURE_GROUPS
+from hybrid_1_1.features import load_raw_data, build_features, ALL_FEATURE_GROUPS
 from hybrid_1_1.autogluon_model import AutoGluonModel
 
 def train_autogluon_standalone(market, time_limit=3600):
@@ -19,9 +19,12 @@ def train_autogluon_standalone(market, time_limit=3600):
         return
         
     # 2. Build Features
-    _, _, df_features = build_prediction_features(df, ALL_FEATURE_GROUPS)
+    X_m, X_e, y_m, y_e, _ = build_features(df, ALL_FEATURE_GROUPS)
     
-    print(f"Total rows: {len(df_features)}")
+    if '_date' in X_m.columns: X_m = X_m.drop(columns=['_date'])
+    if '_date' in X_e.columns: X_e = X_e.drop(columns=['_date'])
+    
+    print(f"Total rows: {len(X_m)}")
     
     # 3. Create directories
     out_dir = os.path.join("trained_models", "autogluon_winners")
@@ -29,17 +32,6 @@ def train_autogluon_standalone(market, time_limit=3600):
     
     # 4. Train Morning Model
     print("\n--- Training Morning AutoGluon Model ---")
-    y_m = df_features['Morning_number']
-    
-    # Drop future-leaking columns
-    cols_to_drop = [
-        'Morning_number', 'Evening_number', 
-        'Morning_card1', 'Morning_card2', 'Morning_card3',
-        'Evening_number1', 'Evening_number2', 'Evening_number3',
-        'Date'
-    ]
-    
-    X_m = df_features.drop(columns=[c for c in cols_to_drop if c in df_features.columns])
     
     m_model = AutoGluonModel()
     m_path = os.path.join(out_dir, f"{market}_ag_morning_temp")
@@ -58,10 +50,6 @@ def train_autogluon_standalone(market, time_limit=3600):
     
     # 5. Train Evening Model
     print("\n--- Training Evening AutoGluon Model ---")
-    y_e = df_features['Evening_number']
-    
-    # Evening uses the same features as morning to predict the evening draw independently
-    X_e = X_m.copy()
     
     e_model = AutoGluonModel()
     e_path = os.path.join(out_dir, f"{market}_ag_evening_temp")

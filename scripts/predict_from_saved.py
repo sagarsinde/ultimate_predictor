@@ -143,12 +143,37 @@ def run_prediction(market, folder):
     if not weights_m and sum(final_probs_m) > 0: final_probs_m /= sum(final_probs_m)
     if not weights_e and sum(final_probs_e) > 0: final_probs_e /= sum(final_probs_e)
 
+    # Check for standalone AutoGluon
+    ag_dir = os.path.join("trained_models", "autogluon_winners")
+    ag_msg_m, ag_msg_e = "", ""
+    if os.path.exists(ag_dir):
+        from hybrid_1_1.autogluon_model import AutoGluonModel
+        _, _, full_features = build_prediction_features(df, ALL_FEATURE_GROUPS)
+        cols_to_drop = ['Morning_number', 'Evening_number', 'Morning_card1', 'Morning_card2', 'Morning_card3', 'Evening_number1', 'Evening_number2', 'Evening_number3', 'Date']
+        X_ag_last = full_features.drop(columns=[c for c in cols_to_drop if c in full_features.columns]).iloc[[-1]]
+        
+        m_ag_path = os.path.join(ag_dir, f"{market}_ag_morning")
+        if os.path.exists(m_ag_path):
+            ag_m = AutoGluonModel()
+            ag_m.load_models(ag_dir, f"{market}_ag_morning")
+            if ag_m.predictor is not None:
+                ag_probs_m = ag_m.predict_proba(X_ag_last)
+                ag_msg_m = f"\nAUTOGLUON MORNING : {format_prediction(ag_probs_m)}"
+                
+        e_ag_path = os.path.join(ag_dir, f"{market}_ag_evening")
+        if os.path.exists(e_ag_path):
+            ag_e = AutoGluonModel()
+            ag_e.load_models(ag_dir, f"{market}_ag_evening")
+            if ag_e.predictor is not None:
+                ag_probs_e = ag_e.predict_proba(X_ag_last)
+                ag_msg_e = f"\nAUTOGLUON EVENING : {format_prediction(ag_probs_e)}"
+
     print(f"Loaded {len(loaded_m)} Morning Models")
     print(f"Loaded {len(loaded_e)} Evening Models")
     
     print(f"\n{'='*70}")
-    print(f"MORNING PREDICTION: {format_prediction(final_probs_m, thresholds_m)}")
-    print(f"EVENING PREDICTION: {format_prediction(final_probs_e, thresholds_e)}")
+    print(f"ENSEMBLE MORNING  : {format_prediction(final_probs_m, thresholds_m)}{ag_msg_m}")
+    print(f"ENSEMBLE EVENING  : {format_prediction(final_probs_e, thresholds_e)}{ag_msg_e}")
     print(f"{'='*70}\n")
 
 

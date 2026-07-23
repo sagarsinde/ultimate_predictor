@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -17,7 +18,7 @@ class AutoGluonModel:
         self.predictor = None
         self.label_col = 'target'
         
-    def fit(self, X, y, sequence=None, dow_sequence=None):
+    def fit(self, X, y, sequence=None, dow_sequence=None, time_limit=30, presets='good_quality', path=None):
         if TabularPredictor is None:
             return
             
@@ -32,16 +33,26 @@ class AutoGluonModel:
         df = pd.DataFrame(X, columns=[f'f_{i}' for i in range(X.shape[1])])
         df[self.label_col] = y
         
-        # Train AutoGluon, limit time to avoid hanging in backtests.
-        # Since this evaluates multiple times in walk-forward, we use a 30s limit per window.
         try:
-            self.predictor = TabularPredictor(label=self.label_col, verbosity=0).fit(
+            self.predictor = TabularPredictor(label=self.label_col, path=path, verbosity=2).fit(
                 train_data=df, 
-                time_limit=30,
-                presets='good_quality'
+                time_limit=time_limit,
+                presets=presets
             )
-        except Exception:
+        except Exception as e:
+            print(f"AutoGluon Training Error: {e}")
             self.predictor = None
+
+    def save_models(self, dir_path, name):
+        if self.predictor is not None:
+            save_path = os.path.join(dir_path, name)
+            self.predictor.clone_for_deployment(path=save_path)
+
+    def load_models(self, dir_path, name):
+        if TabularPredictor is not None:
+            load_path = os.path.join(dir_path, name)
+            if os.path.exists(load_path):
+                self.predictor = TabularPredictor.load(load_path)
         
     def predict_proba(self, X, last_digits=None, current_dow=None):
         if self.predictor is None:

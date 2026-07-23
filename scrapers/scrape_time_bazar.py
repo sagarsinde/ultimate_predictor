@@ -97,11 +97,23 @@ def parse_time_bazar_chart(html_path, out_path):
 
     print(f"Scraped {len(sorted_rows)} valid records to {out_path}")
 
+import requests
+
 if __name__ == '__main__':
-    html_file = r'C:\Users\admin\.gemini\antigravity-ide\brain\e1ca7c17-6610-4891-b927-4f6145ddf7de\.system_generated\steps\3281\content.md'
+    url = 'https://sattamatka.day/time-bazar-panel-chart.php'
     out_file = r'f:\ultimate_preducter\data\time_bazar_dataset.csv'
     
-    if os.path.exists(html_file):
+    print(f"Downloading from {url}...")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        html_file = 'time_bazar_temp.html'
+        with open(html_file, 'w', encoding='utf-8') as f:
+            f.write(response.text)
+        
         parse_time_bazar_chart(html_file, out_file)
+        os.remove(html_file)
     else:
-        print(f"Error: Could not find downloaded HTML file at {html_file}")
+        print(f"Error downloading: {response.status_code}")
